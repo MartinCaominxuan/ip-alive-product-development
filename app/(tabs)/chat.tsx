@@ -1,9 +1,9 @@
 import { StyleSheet, Text, View } from 'react-native';
 
-export default function CharacterScreen() {
+export default function ChatScreen() {
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Character Page</Text>
+      <Text style={styles.title}>Chat Page</Text>
     </View>
   );
 }
