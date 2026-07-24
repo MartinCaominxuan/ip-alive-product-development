@@ -2,103 +2,146 @@
 
 > Extending the emotional lifecycle of physical collectibles through persistent AI-powered character relationships.
 
-## Overview
-
-IP Alive is an independent product and research project exploring how AI can transform collectible characters from static objects into persistent companions.
-
-The project combines product design, user research, and AI engineering to investigate how long-term relationships with digital characters can increase engagement, emotional connection, and value for both users and IP owners.
-
 ---
 
-## Vision
+## 🌟 Vision
 
-Traditional collectible lifecycle:
+Most character collectibles follow a predictable lifecycle:
 
-Purchase → Unbox → Display → Forget
-
-IP Alive explores a new lifecycle:
-
-Purchase → Meet Your Character → Build a Relationship → Daily Interaction → Long-term Connection
-
----
-
-## Current Stage
-
-Current focus:
-
-- Research validation
-- Product design
-- React Native MVP
-- AI companion architecture
-- Longitudinal user study
-
----
-
-## Repository Structure
-
-```text
-app/            React Native (Expo) application
-assets/         Images and static resources
-components/     Shared UI components
-docs/
-    product/    Product requirements and vision
-    research/   User research and validation
-    technical/  Architecture and implementation
-    codex/      AI development guidance
+```
+Purchase → Open → Display → Forget
 ```
 
+IP Alive explores a different future:
+
+```
+Purchase → Build a relationship → Daily interaction → Long-term engagement
+```
+
+Rather than treating collectibles as static objects, IP Alive explores how AI can transform them into persistent companions with memory, personality, and meaningful long-term interaction.
+
 ---
 
-## Technology Stack
+## 🎯 The Problem
+
+Millions of collectible figures are purchased every year.
+
+However, emotional engagement often fades shortly after purchase.
+
+Current digital experiences are typically:
+
+- one-time
+- promotional
+- disconnected
+- lacking memory
+- lacking continuity
+
+Neither collectors nor IP owners currently have an effective way to sustain long-term relationships between fans and characters.
+
+---
+
+## 💡 Our Direction
+
+IP Alive is exploring a B2B platform that enables IP owners to connect physical collectibles with persistent AI companions.
+
+Potential capabilities include:
+
+- Character identity
+- Persistent memory
+- Daily conversations
+- Relationship progression
+- Collectible recognition
+- Emotional continuity
+
+---
+
+## 🚀 Current MVP
+
+The research MVP currently focuses on:
+
+- ✅ Character page
+- ✅ AI chat
+- ✅ Memory system
+- ✅ Daily check-in
+- ✅ Relationship level
+- ✅ Research logging
+
+Future versions may explore richer interaction systems after validation.
+
+---
+
+## 🛠 Tech Stack
 
 Frontend
 
 - React Native
 - Expo
+- Expo Router
 - TypeScript
 
 Backend (planned)
 
 - FastAPI
-
-Database
-
 - Supabase
-
-AI
-
-- Large Language Models
-- Long-term memory system
+- LLM API
 
 ---
 
-## Research
+## 📂 Repository Structure
 
-Current research includes:
+```
+app/
+assets/
+components/
+constants/
+hooks/
 
-- Blind-box emotional attachment survey
-- Character relationship design
-- Longitudinal interaction study
-- AI memory architecture
-- Collectible emotional lifecycle
-
----
-
-## Roadmap
-
-- ✅ Development environment
-- ✅ Navigation MVP
-- 🚧 Character Home
-- 🚧 Chat System
-- 🚧 Memory System
-- ⏳ Supabase Integration
-- ⏳ AI Companion
-- ⏳ Research MVP
+product/
+research/
+ethics-and-safety/
+portfolio/
+docs/
+```
 
 ---
 
-## Disclaimer
+## 📚 Research
 
-IP Alive is an independent exploratory project.
+Current research explores:
 
-References to existing IP companies are for research and discussion purposes only and do not imply partnership or endorsement.
+- emotional attachment
+- post-purchase engagement
+- AI companionship
+- longitudinal interaction
+- willingness to pay
+- responsible AI relationships
+
+Research is currently exploratory and should not be interpreted as validated findings.
+
+---
+
+## 🗺 Roadmap
+
+- [x] Product vision
+- [x] Research framework
+- [x] Expo prototype
+- [ ] Character interaction MVP
+- [ ] 30-day user study
+- [ ] Partner pilot
+- [ ] Commercial validation
+
+---
+
+## ⚠ Disclaimer
+
+IP Alive is an independent research and product exploration project.
+
+References to Disney, LEGO, Pop Mart, Bandai, or other companies are illustrative only and do not imply any partnership or endorsement.
+
+---
+
+## 📄 Status
+
+Current Phase:
+
+> Product Discovery + Research MVP Development
