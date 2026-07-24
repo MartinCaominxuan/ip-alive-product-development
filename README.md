@@ -1,50 +1,104 @@
-# Welcome to your Expo app 👋
+# IP Alive
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+> Extending the emotional lifecycle of physical collectibles through persistent AI-powered character relationships.
 
-## Get started
+## Overview
 
-1. Install dependencies
+IP Alive is an independent product and research project exploring how AI can transform collectible characters from static objects into persistent companions.
 
-   ```bash
-   npm install
-   ```
+The project combines product design, user research, and AI engineering to investigate how long-term relationships with digital characters can increase engagement, emotional connection, and value for both users and IP owners.
 
-2. Start the app
+---
 
-   ```bash
-   npx expo start
-   ```
+## Vision
 
-In the output, you'll find options to open the app in a
+Traditional collectible lifecycle:
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+Purchase → Unbox → Display → Forget
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+IP Alive explores a new lifecycle:
 
-## Get a fresh project
+Purchase → Meet Your Character → Build a Relationship → Daily Interaction → Long-term Connection
 
-When you're ready, run:
+---
 
-```bash
-npm run reset-project
+## Current Stage
+
+Current focus:
+
+- Research validation
+- Product design
+- React Native MVP
+- AI companion architecture
+- Longitudinal user study
+
+---
+
+## Repository Structure
+
+```text
+app/            React Native (Expo) application
+assets/         Images and static resources
+components/     Shared UI components
+docs/
+    product/    Product requirements and vision
+    research/   User research and validation
+    technical/  Architecture and implementation
+    codex/      AI development guidance
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+---
 
-## Learn more
+## Technology Stack
 
-To learn more about developing your project with Expo, look at the following resources:
+Frontend
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+- React Native
+- Expo
+- TypeScript
 
-## Join the community
+Backend (planned)
 
-Join our community of developers creating universal apps.
+- FastAPI
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+Database
+
+- Supabase
+
+AI
+
+- Large Language Models
+- Long-term memory system
+
+---
+
+## Research
+
+Current research includes:
+
+- Blind-box emotional attachment survey
+- Character relationship design
+- Longitudinal interaction study
+- AI memory architecture
+- Collectible emotional lifecycle
+
+---
+
+## Roadmap
+
+- ✅ Development environment
+- ✅ Navigation MVP
+- 🚧 Character Home
+- 🚧 Chat System
+- 🚧 Memory System
+- ⏳ Supabase Integration
+- ⏳ AI Companion
+- ⏳ Research MVP
+
+---
+
+## Disclaimer
+
+IP Alive is an independent exploratory project.
+
+References to existing IP companies are for research and discussion purposes only and do not imply partnership or endorsement.
