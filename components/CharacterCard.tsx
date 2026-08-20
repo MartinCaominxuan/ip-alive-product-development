@@ -5,13 +5,14 @@ import {
     View,
 } from "react-native";
 
-import { getRelationshipStage } from "../utils/relationship";
+import { getRelationshipStage } from "@/utils/relationship";
 
 type CharacterCardProps = {
   name: string;
   emoji: string;
   level: number;
   status: string;
+  unlocked: boolean;
   onPress?: () => void;
 };
 
@@ -20,6 +21,7 @@ export default function CharacterCard({
   emoji,
   level,
   status,
+  unlocked,
   onPress,
 }: CharacterCardProps) {
   const relationshipStage =
@@ -29,36 +31,45 @@ export default function CharacterCard({
     <Pressable
       style={({ pressed }) => [
         styles.card,
-        pressed && styles.cardPressed,
+        !unlocked && styles.cardLocked,
+        pressed && unlocked && styles.cardPressed,
       ]}
-      onPress={onPress}
+      disabled={!unlocked}
+      onPress={unlocked ? onPress : undefined}
     >
-      <View style={styles.avatarContainer}>
-        <Text style={styles.emoji}>{emoji}</Text>
+      <View style={[styles.avatarContainer, !unlocked && styles.avatarLocked]}>
+        <Text style={[styles.emoji, !unlocked && styles.emojiLocked]}>
+          {unlocked ? emoji : "?"}
+        </Text>
+        {!unlocked && (
+          <View style={styles.lockBadge}>
+            <Text style={styles.lockIcon}>🔒</Text>
+          </View>
+        )}
       </View>
 
       <View style={styles.content}>
         <Text 
-          style={styles.name}
+          style={[styles.name, !unlocked && styles.textLocked]}
           numberOfLines={1}
           ellipsizeMode="tail"
         >
           {name}
         </Text>
 
-        <Text 
-           style={styles.relationship}
+        <Text
+           style={[styles.relationship, !unlocked && styles.textLocked]}
             numberOfLines={1}
             ellipsizeMode="tail"
         >
-          {relationshipStage.emoji} {relationshipStage.name}
+          {unlocked ? `${relationshipStage.emoji} ${relationshipStage.name}` : "Locked character"}
         </Text>
 
         <Text
-          style={styles.status}
+          style={[styles.status, !unlocked && styles.textLocked]}
           numberOfLines={2}
         >
-          {status}
+          {unlocked ? status : "Unlock with a physical collectible"}
         </Text>
       </View>
 
@@ -97,6 +108,12 @@ const styles = StyleSheet.create({
     ],
   },
 
+  cardLocked: {
+    backgroundColor: "#E9E9EC",
+    shadowOpacity: 0,
+    elevation: 0,
+  },
+
   avatarContainer: {
     width: 58,
     height: 58,
@@ -109,8 +126,33 @@ const styles = StyleSheet.create({
     marginRight: 14,
   },
 
+  avatarLocked: {
+    backgroundColor: "#D5D5DA",
+  },
+
   emoji: {
     fontSize: 32,
+  },
+
+  emojiLocked: {
+    color: "#929298",
+    fontWeight: "800",
+  },
+
+  lockBadge: {
+    position: "absolute",
+    right: -3,
+    bottom: -3,
+    width: 25,
+    height: 25,
+    borderRadius: 13,
+    backgroundColor: "#FFFFFF",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  lockIcon: {
+    fontSize: 12,
   },
 
   content: {
@@ -136,6 +178,10 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 19,
     color: "#777777",
+  },
+
+  textLocked: {
+    color: "#85858C",
   },
 
   
