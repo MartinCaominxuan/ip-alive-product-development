@@ -8,8 +8,11 @@ import {
 } from "react-native";
 
 import CharacterCard from "@/components/CharacterCard";
+import LanguageToggle from "@/components/LanguageToggle";
 import { SERIES_INFO } from "@/data/characters";
+import { characterNamesZh } from "@/data/localized-content";
 import { getCharacterViews } from "@/features/characters";
+import { useLanguage } from "@/hooks/use-language";
 
 const CARD_MIN_WIDTH = 160;
 const CARD_GAP = 10;
@@ -17,6 +20,7 @@ const PAGE_HORIZONTAL_PADDING = 16;
 const MAX_CONTENT_WIDTH = 1200;
 
 export default function CharacterScreen() {
+  const { language, text } = useLanguage();
   const { width } = useWindowDimensions();
 
   const characterViews = getCharacterViews();
@@ -50,10 +54,13 @@ export default function CharacterScreen() {
       showsVerticalScrollIndicator={false}
     >
       <View style={styles.page}>
-        <Text style={styles.pageTitle}>Characters</Text>
+        <View style={styles.titleRow}>
+          <Text style={styles.pageTitle}>{text("Characters", "角色")}</Text>
+          <LanguageToggle compact />
+        </View>
 
         <Text style={styles.pageSubtitle}>
-          Choose someone to spend time with.
+          {text("Choose someone to spend time with.", "选择一位角色，开始你们的陪伴旅程。")}
         </Text>
 
         {seriesNames.map((seriesName) => {
@@ -72,7 +79,7 @@ export default function CharacterScreen() {
                 <View>
                   <Text style={styles.seriesTitle}>{SERIES_INFO[seriesName].title}</Text>
                   <Text style={styles.seriesProgressLabel}>
-                    {unlockedCount}/{totalCount} unlocked
+                    {text(`${unlockedCount}/${totalCount} unlocked`, `已解锁 ${unlockedCount}/${totalCount}`)}
                   </Text>
                 </View>
                 <Text style={styles.seriesFraction}>({unlockedCount}/{totalCount})</Text>
@@ -95,10 +102,11 @@ export default function CharacterScreen() {
                       ]}
                     >
                       <CharacterCard
-                        name={character.displayName}
+                        name={language === "zh" ? character.displayNameZh ?? characterNamesZh[character.displayName] ?? character.displayName : character.displayName}
                         emoji={character.emoji ?? "🙂"}
                         level={companion.level}
-                        status={companion.status}
+                        status={language === "zh" ? character.statusZh ?? companion.status : companion.status}
+                        language={language}
                         unlocked={companion.unlocked}
                         onPress={() =>
                           router.push({
@@ -140,6 +148,12 @@ const styles = StyleSheet.create({
     fontSize: 30,
     fontWeight: "800",
     color: "#222222",
+  },
+
+  titleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
   },
 
   pageSubtitle: {

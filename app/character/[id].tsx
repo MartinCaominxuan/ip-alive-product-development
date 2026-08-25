@@ -2,22 +2,35 @@ import { router, useLocalSearchParams } from "expo-router";
 import { useMemo, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
-import { characterJourneys, characterMails, inventory, outfits } from "@/data/character-content";
+import LanguageToggle from "@/components/LanguageToggle";
+import { characterMails, inventory, outfits } from "@/data/character-content";
+import { characterNamesZh, mailTranslationsZh } from "@/data/localized-content";
 import { getCharacterViewById } from "@/features/characters";
-import { getRelationshipStage } from "@/utils/relationship";
+import { getJourneyOptions } from "@/features/travel";
+import { useLanguage } from "@/hooks/use-language";
+import { AFFINITY_LEVELS, getAffinityLevel, useAffinity } from "@/hooks/use-affinity";
 
 const OUTFIT_EMOJI: Record<string, string> = {
   "daily-knit": "🧶",
   "starlight-coat": "🌌",
   "summer-sailor": "⛵",
   "moon-festival": "🌕",
+  "yunzhou-scholar": "📜",
+  "yunzhou-2026": "🧥",
+  "mia-weekend": "🎧",
+  "mia-concert": "🎤",
+  "nova-orbit": "🛰️",
+  "nova-retro": "📱",
 };
 
 export default function CharacterHomeScreen() {
+  const { language, text } = useLanguage();
+  const affinity = useAffinity();
   const { id } = useLocalSearchParams<{ id: string }>();
   const view = getCharacterViewById(id);
   const ownedOutfitIds = useMemo(() => new Set(inventory.map((item) => item.outfitId)), []);
   const characterOutfits = outfits.filter((outfit) => outfit.characterIds.includes(id));
+  const ownedCharacterOutfits = characterOutfits.filter((outfit) => ownedOutfitIds.has(outfit.id));
   const [equippedOutfitId, setEquippedOutfitId] = useState(
     inventory.find((item) => item.equippedCharacterId === id)?.outfitId ?? characterOutfits[0]?.id,
   );
@@ -27,30 +40,40 @@ export default function CharacterHomeScreen() {
   }
 
   const { character, companion } = view;
-  const relationship = getRelationshipStage(companion.relationshipLevel - 1);
-  const journeys = characterJourneys.filter((journey) => journey.companionId === id);
   const mails = characterMails.filter((mail) => mail.characterId === id);
   const daysTogether = 28;
+  const characterName = language === "zh" ? character.displayNameZh ?? characterNamesZh[character.displayName] ?? character.displayName : character.displayName;
+  const bondPoints = affinity.points[id] ?? 0;
+  const bondLevel = getAffinityLevel(bondPoints);
+  const currentThreshold = AFFINITY_LEVELS[bondLevel - 1] ?? 0;
+  const nextThreshold = AFFINITY_LEVELS[bondLevel] ?? currentThreshold;
+  const bondProgress = nextThreshold === currentThreshold ? 1 : (bondPoints - currentThreshold) / (nextThreshold - currentThreshold);
+  const journeyOptions = getJourneyOptions(character.era ?? "modern", bondLevel);
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-      <Pressable style={styles.backButton} onPress={() => router.back()}><Text style={styles.backText}>‹ Characters</Text></Pressable>
+      <View style={styles.topBar}><Pressable style={styles.backButton} onPress={() => router.back()}><Text style={styles.backText}>‹ {text("Characters", "角色")}</Text></Pressable><LanguageToggle /></View>
 
       <View style={styles.hero}>
         <View style={styles.avatar}><Text style={styles.avatarEmoji}>{character.emoji ?? "🙂"}</Text></View>
-        <Text style={styles.name}>{character.displayName}</Text>
-        <Text style={styles.outfitLabel}>{characterOutfits.find((item) => item.id === equippedOutfitId)?.name ?? "Default look"}</Text>
-        <View style={styles.bondBadge}><Text style={styles.bondBadgeText}>{relationship.emoji} {relationship.name}</Text></View>
-        <Text style={styles.status}>{companion.status}</Text>
+        <Text style={styles.name}>{characterName}</Text>
+        <Text style={styles.outfitLabel}>{(() => { const selectedOutfit = characterOutfits.find((item) => item.id === equippedOutfitId); return selectedOutfit ? (language === "zh" ? selectedOutfit.nameZh : selectedOutfit.name) : text("Default look", "默认造型"); })()}</Text>
+        <View style={styles.bondBadge}><Text style={styles.bondBadgeText}>{"♥".repeat(Math.min(bondLevel, 6))} · Lv.{bondLevel}</Text></View>
+        <Text style={styles.status}>{language === "zh" ? character.statusZh ?? companion.status : companion.status}</Text>
       </View>
 
       <View style={styles.statsRow}>
-        <Stat value={daysTogether} label="Days together" />
-        <Stat value={146} label="Messages" />
-        <Stat value={companion.relationshipLevel} label="Bond level" />
+        <Stat value={daysTogether} label={text("Days together", "陪伴天数")} />
+        <Stat value={146} label={text("Messages", "消息数量")} />
+        <Stat value={bondLevel} label={text("Bond level", "好感等级")} />
       </View>
 
-      <SectionHeader title="Wardrobe" detail={`${ownedOutfitIds.size}/${characterOutfits.length} unlocked`} />
+      <View style={styles.affinityCard}><View style={styles.affinityTop}><Text style={styles.affinityTitle}>{text("Bond journey", "好感度旅程")}</Text><Text style={styles.affinityPoints}>{bondPoints} / {nextThreshold} ♥</Text></View><View style={styles.affinityTrack}><View style={[styles.affinityFill,{width:`${Math.max(0,Math.min(bondProgress,1))*100}%`}]} /></View><View style={styles.milestoneRow}>{[
+        {level:bondLevel+1,en:"New mail",zh:"新邮件"},{level:bondLevel+2,en:"Special outfit",zh:"限定服装"},{level:bondLevel+3,en:"Present portal",zh:"现世旅行"}
+      ].map((item,index)=><View key={index} style={styles.milestone}><View style={styles.milestoneLock}><Text style={styles.milestoneIcon}>🔒</Text></View><Text style={styles.milestoneLevel}>♥ {item.level}</Text><Text style={styles.milestoneName}>{text(item.en,item.zh)}</Text></View>)}</View></View>
+
+      <SectionHeader title={text("Wardrobe", "衣柜")} detail={`${ownedCharacterOutfits.length}/${characterOutfits.length} ${text("unlocked", "已解锁")}`} />
+      <Pressable style={styles.wardrobeButton} onPress={() => router.push({ pathname: "/wardrobe/[id]", params: { id } })}><View><Text style={styles.wardrobeEyebrow}>{text("VISUAL DRESS-UP", "可视化换装")}</Text><Text style={styles.wardrobeTitle}>{text("Open full wardrobe", "打开完整衣橱")}</Text></View><Text style={styles.wardrobeArrow}>›</Text></Pressable>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.outfitRow}>
         {characterOutfits.map((outfit) => {
           const owned = ownedOutfitIds.has(outfit.id);
@@ -58,32 +81,38 @@ export default function CharacterHomeScreen() {
           return (
             <Pressable key={outfit.id} disabled={!owned} onPress={() => setEquippedOutfitId(outfit.id)} style={[styles.outfitCard, !owned && styles.lockedCard, selected && styles.selectedCard]}>
               <Text style={styles.outfitEmoji}>{owned ? OUTFIT_EMOJI[outfit.id] : "🔒"}</Text>
-              <Text style={[styles.outfitName, !owned && styles.muted]} numberOfLines={1}>{outfit.name}</Text>
-              <Text style={styles.outfitRarity}>{selected ? "EQUIPPED" : owned ? outfit.rarity.toUpperCase() : "LOCKED"}</Text>
+              <Text style={[styles.outfitName, !owned && styles.muted]} numberOfLines={1}>{language === "zh" ? outfit.nameZh : outfit.name}</Text>
+              <Text style={styles.outfitRarity}>{selected ? text("EQUIPPED", "穿着中") : owned ? text(outfit.rarity.toUpperCase(), "已拥有") : text("LOCKED", "未解锁")}</Text>
             </Pressable>
           );
         })}
       </ScrollView>
 
-      <SectionHeader title={`${character.displayName}'s journeys`} detail={`${journeys.length} returned`} />
-      <View style={styles.featureCard}>
-        <View style={styles.featureIcon}><Text style={styles.featureEmoji}>🗺️</Text></View>
-        <View style={styles.featureCopy}><Text style={styles.featureTitle}>Kyoto after the rain</Text><Text style={styles.featureText}>Returned with a postcard · 9 days ago</Text></View>
-        <Text style={styles.chevron}>›</Text>
-      </View>
-
-      <SectionHeader title="Mail from your character" detail={`${mails.filter((mail) => !mail.readAt).length} unread`} />
-      {mails.map((mail) => (
-        <View key={mail.id} style={styles.mailCard}>
-          <View style={[styles.unreadDot, mail.readAt && styles.readDot]} />
-          <View style={styles.mailCopy}><Text style={styles.mailSubject}>{mail.subject}</Text><Text style={styles.mailPreview} numberOfLines={2}>{mail.body}</Text></View>
-          <Text style={styles.mailIcon}>✉</Text>
+      <SectionHeader title={text(`${characterName}'s journeys`, `${characterName}的旅行`)} detail={`${text("Bond", "亲密度")} Lv.${bondLevel}`} />
+      {journeyOptions.map((journey) => (
+        <View key={journey.id} style={[styles.featureCard, !journey.unlocked && styles.journeyLocked]}>
+          <View style={styles.featureIcon}><Text style={styles.featureEmoji}>{journey.unlocked ? journey.emoji : "🔒"}</Text></View>
+          <View style={styles.featureCopy}>
+            <Text style={[styles.featureTitle, !journey.unlocked && styles.muted]}>{language === "zh" ? journey.nameZh : journey.name}</Text>
+            <Text style={styles.featureText}>{journey.unlocked ? (language === "zh" ? journey.descriptionZh : journey.description) : text(`Reach Bond Lv.${journey.requiredBondLevel} to break the timeline barrier.`, `亲密度达到 ${journey.requiredBondLevel} 级后解锁时空边界。`)}</Text>
+          </View>
+          <Text style={styles.chevron}>{journey.unlocked ? "›" : ""}</Text>
         </View>
       ))}
 
+      <SectionHeader title={text("Mail from your character", "角色来信")} detail={`${mails.filter((mail) => !mail.readAt).length} ${text("unread", "封未读")}`} />
+      {mails.map((mail) => (
+        <Pressable key={mail.id} style={styles.mailCard} onPress={() => router.push({ pathname: "/mail/[id]", params: { id: mail.id } })}>
+          <View style={[styles.unreadDot, mail.readAt && styles.readDot]} />
+          <View style={styles.mailCopy}><Text style={styles.mailSubject}>{language === "zh" ? mailTranslationsZh[mail.id]?.subject ?? mail.subject : mail.subject}</Text><Text style={styles.mailPreview} numberOfLines={2}>{language === "zh" ? mailTranslationsZh[mail.id]?.body ?? mail.body : mail.body}</Text></View>
+          <Text style={styles.mailIcon}>✉</Text>
+        </Pressable>
+      ))}
+
       <Pressable style={styles.chatButton} onPress={() => router.push({ pathname: "/chat", params: { id } })}>
-        <Text style={styles.chatButtonText}>Talk with {character.displayName}</Text>
+        <Text style={styles.chatButtonText}>{text(`Talk with ${characterName}`, `和${characterName}聊天`)}</Text>
       </Pressable>
+      <Pressable style={styles.gameButton} onPress={() => router.push({ pathname: "/play", params: { id } })}><Text style={styles.gameButtonIcon}>✦ ◆ ●</Text><View style={styles.gameButtonCopy}><Text style={styles.gameButtonTitle}>{text(`Play with ${characterName}`, `和${characterName}一起玩`)}</Text><Text style={styles.gameButtonText}>{text("Earn Bubble and unlock outfits", "赢取 Bubble，解锁服装")}</Text></View><Text style={styles.gameButtonArrow}>›</Text></Pressable>
     </ScrollView>
   );
 }
@@ -100,6 +129,7 @@ const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: "#F6F4FA" },
   content: { paddingHorizontal: 18, paddingTop: 56, paddingBottom: 46 },
   backButton: { alignSelf: "flex-start", paddingVertical: 8 },
+  topBar: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   backText: { fontSize: 15, fontWeight: "700", color: "#6E55D8" },
   hero: { alignItems: "center", paddingVertical: 16 },
   avatar: { width: 116, height: 116, borderRadius: 58, alignItems: "center", justifyContent: "center", backgroundColor: "#ECE6FF", borderWidth: 5, borderColor: "#FFFFFF" },
@@ -110,6 +140,7 @@ const styles = StyleSheet.create({
   bondBadgeText: { fontSize: 12, fontWeight: "800", color: "#5B42B6" },
   status: { marginTop: 12, fontSize: 14, color: "#6E6875" },
   statsRow: { flexDirection: "row", paddingVertical: 16, borderRadius: 22, backgroundColor: "#FFFFFF" },
+  affinityCard: { marginTop: 12, padding: 17, borderRadius: 22, backgroundColor: "#FFF" }, affinityTop: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" }, affinityTitle: { fontSize: 15, fontWeight: "900", color: "#342D3C" }, affinityPoints: { fontSize: 10, fontWeight: "900", color: "#D65B81" }, affinityTrack: { height: 10, marginTop: 12, overflow: "hidden", borderRadius: 5, backgroundColor: "#F1DDE5" }, affinityFill: { height: "100%", borderRadius: 5, backgroundColor: "#E7648E" }, milestoneRow: { flexDirection: "row", justifyContent: "space-between", marginTop: 15 }, milestone: { width: "31%", alignItems: "center" }, milestoneLock: { width: 35, height: 35, borderRadius: 18, alignItems: "center", justifyContent: "center", backgroundColor: "#EEEAF2" }, milestoneIcon: { fontSize: 13 }, milestoneLevel: { marginTop: 5, fontSize: 8, fontWeight: "900", color: "#D65B81" }, milestoneName: { marginTop: 2, fontSize: 8, textAlign: "center", color: "#756D7B" },
   stat: { flex: 1, alignItems: "center", borderRightWidth: StyleSheet.hairlineWidth, borderRightColor: "#DED9E5" },
   statValue: { fontSize: 22, fontWeight: "900", color: "#322B3B" },
   statLabel: { marginTop: 3, fontSize: 9, color: "#807887" },
@@ -117,6 +148,8 @@ const styles = StyleSheet.create({
   sectionTitle: { fontSize: 18, fontWeight: "800", color: "#29242F" },
   sectionDetail: { fontSize: 11, fontWeight: "700", color: "#745BDB" },
   outfitRow: { gap: 10, paddingRight: 18 },
+  wardrobeButton: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 11, padding: 16, borderRadius: 19, backgroundColor: "#29203E" },
+  wardrobeEyebrow: { fontSize: 8, fontWeight: "900", letterSpacing: 1.3, color: "#BCA9FF" }, wardrobeTitle: { marginTop: 4, fontSize: 14, fontWeight: "900", color: "#FFFFFF" }, wardrobeArrow: { fontSize: 28, color: "#FFFFFF" },
   outfitCard: { width: 116, padding: 13, borderRadius: 18, backgroundColor: "#FFFFFF", borderWidth: 2, borderColor: "transparent" },
   selectedCard: { borderColor: "#7C5CFC", backgroundColor: "#F4F0FF" },
   lockedCard: { opacity: 0.55, backgroundColor: "#E4E2E6" },
@@ -125,6 +158,7 @@ const styles = StyleSheet.create({
   outfitRarity: { marginTop: 4, fontSize: 8, fontWeight: "800", color: "#7967C9" },
   muted: { color: "#8D8991" },
   featureCard: { flexDirection: "row", alignItems: "center", padding: 15, borderRadius: 20, backgroundColor: "#E9F2FF" },
+  journeyLocked: { marginTop: 9, opacity: 0.65, backgroundColor: "#E6E3E9" },
   featureIcon: { width: 50, height: 50, borderRadius: 16, alignItems: "center", justifyContent: "center", backgroundColor: "#FFFFFF" },
   featureEmoji: { fontSize: 25 },
   featureCopy: { flex: 1, marginLeft: 13 },
@@ -140,6 +174,7 @@ const styles = StyleSheet.create({
   mailIcon: { marginLeft: 12, color: "#756C7C" },
   chatButton: { alignItems: "center", marginTop: 25, paddingVertical: 16, borderRadius: 20, backgroundColor: "#6D4FE3" },
   chatButtonText: { fontSize: 15, fontWeight: "800", color: "#FFFFFF" },
+  gameButton: { flexDirection: "row", alignItems: "center", marginTop: 10, padding: 15, borderRadius: 20, backgroundColor: "#FFF0C5" }, gameButtonIcon: { fontSize: 13, fontWeight: "900", color: "#876913" }, gameButtonCopy: { flex: 1, marginLeft: 12 }, gameButtonTitle: { fontSize: 13, fontWeight: "900", color: "#57430D" }, gameButtonText: { marginTop: 3, fontSize: 9, color: "#806D39" }, gameButtonArrow: { fontSize: 25, color: "#8A6D22" },
   missing: { flex: 1, alignItems: "center", justifyContent: "center" },
   link: { marginTop: 12, color: "#6D4FE3" },
 });
