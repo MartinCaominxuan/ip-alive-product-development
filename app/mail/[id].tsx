@@ -1,5 +1,5 @@
 import { router, useLocalSearchParams } from "expo-router";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import LanguageToggle from "@/components/LanguageToggle";
@@ -13,11 +13,13 @@ export default function MailDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { language, text } = useLanguage();
   const affinity = useAffinity();
-  const mail = characterMails.find((item) => item.id === id);
+  const staticMail = characterMails.find((item) => item.id === id);
+  const runtimeMail = affinity.getMail(id);
+  const mail = useMemo(() => runtimeMail ? { id: runtimeMail.id, characterId: runtimeMail.characterId, subject: language === "zh" ? runtimeMail.subjectZh : runtimeMail.subjectEn, body: language === "zh" ? runtimeMail.bodyZh : runtimeMail.bodyEn, sentAt: runtimeMail.sentAt } : staticMail, [language, runtimeMail, staticMail]);
   useEffect(() => { if (mail) affinity.award(mail.characterId, 18, "mail", mail.id); }, [affinity, mail]);
   if (!mail) return <View style={styles.center}><Text>{text("Mail not found.", "没有找到这封信。")}</Text></View>;
   const character = getCharacterViewById(mail.characterId)?.character;
-  const translated = language === "zh" ? mailTranslationsZh[mail.id] : mailTranslationsEn[mail.id];
+  const translated = !runtimeMail ? (language === "zh" ? mailTranslationsZh[mail.id] : mailTranslationsEn[mail.id]) : undefined;
   const characterName = language === "zh" ? character?.displayNameZh ?? character?.displayName : character?.displayName;
 
   return <ScrollView style={styles.screen} contentContainerStyle={styles.content}>

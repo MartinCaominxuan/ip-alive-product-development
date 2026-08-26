@@ -40,8 +40,13 @@ export default function CharacterHomeScreen() {
   }
 
   const { character, companion } = view;
-  const mails = characterMails.filter((mail) => mail.characterId === id);
-  const daysTogether = 28;
+  const staticMails = characterMails.filter((mail) => mail.characterId === id);
+  const mails = [
+    ...affinity.runtimeMails.filter((mail) => mail.characterId === id).map((mail) => ({ id: mail.id, subject: language === "zh" ? mail.subjectZh : mail.subjectEn, body: language === "zh" ? mail.bodyZh : mail.bodyEn, readAt: mail.readAt })),
+    ...staticMails.map((mail) => ({ id: mail.id, subject: language === "zh" ? mailTranslationsZh[mail.id]?.subject ?? mail.subject : mail.subject, body: language === "zh" ? mailTranslationsZh[mail.id]?.body ?? mail.body : mail.body, readAt: mail.readAt ?? (affinity.awardedEvents.includes(`mail:${id}:${mail.id}`) ? "read" : undefined) })),
+  ];
+  const startedAt = affinity.metrics[id]?.relationshipStartedAt;
+  const daysTogether = startedAt ? Math.max(1, Math.ceil((Date.now() - new Date(startedAt).getTime()) / 86400000)) : 1;
   const characterName = language === "zh" ? character.displayNameZh ?? characterNamesZh[character.displayName] ?? character.displayName : character.displayName;
   const bondPoints = affinity.points[id] ?? 0;
   const bondLevel = getAffinityLevel(bondPoints);
@@ -64,9 +69,11 @@ export default function CharacterHomeScreen() {
 
       <View style={styles.statsRow}>
         <Stat value={daysTogether} label={text("Days together", "陪伴天数")} />
-        <Stat value={146} label={text("Messages", "消息数量")} />
+        <Stat value={affinity.metrics[id]?.chatCount ?? 0} label={text("Messages", "消息数量")} />
         <Stat value={bondLevel} label={text("Bond level", "好感等级")} />
       </View>
+
+      {id === "nova" && <View style={styles.eventCard}><View><Text style={styles.eventEyebrow}>{text("LIVE CHARACTER EVENT", "角色事件进行中")}</Text><Text style={styles.eventTitle}>{text("Europa Archive Journey", "木卫二档案之旅")}</Text><Text style={styles.eventDetail}>{text("Keep talking with Nova to receive all three travel updates.", "继续与诺瓦聊天，收齐三封旅行动态邮件。")}</Text></View><Text style={styles.eventProgress}>{Math.min(3, affinity.runtimeMails.filter((mail) => mail.id.startsWith("event-nova-europa")).length)}/3</Text></View>}
 
       <View style={styles.affinityCard}><View style={styles.affinityTop}><Text style={styles.affinityTitle}>{text("Bond journey", "好感度旅程")}</Text><Text style={styles.affinityPoints}>{bondPoints} / {nextThreshold} ♥</Text></View><View style={styles.affinityTrack}><View style={[styles.affinityFill,{width:`${Math.max(0,Math.min(bondProgress,1))*100}%`}]} /></View><View style={styles.milestoneRow}>{[
         {level:bondLevel+1,en:"New mail",zh:"新邮件"},{level:bondLevel+2,en:"Special outfit",zh:"限定服装"},{level:bondLevel+3,en:"Present portal",zh:"现世旅行"}
@@ -104,7 +111,7 @@ export default function CharacterHomeScreen() {
       {mails.map((mail) => (
         <Pressable key={mail.id} style={styles.mailCard} onPress={() => router.push({ pathname: "/mail/[id]", params: { id: mail.id } })}>
           <View style={[styles.unreadDot, mail.readAt && styles.readDot]} />
-          <View style={styles.mailCopy}><Text style={styles.mailSubject}>{language === "zh" ? mailTranslationsZh[mail.id]?.subject ?? mail.subject : mail.subject}</Text><Text style={styles.mailPreview} numberOfLines={2}>{language === "zh" ? mailTranslationsZh[mail.id]?.body ?? mail.body : mail.body}</Text></View>
+          <View style={styles.mailCopy}><Text style={styles.mailSubject}>{mail.subject}</Text><Text style={styles.mailPreview} numberOfLines={2}>{mail.body}</Text></View>
           <Text style={styles.mailIcon}>✉</Text>
         </Pressable>
       ))}
@@ -140,6 +147,7 @@ const styles = StyleSheet.create({
   bondBadgeText: { fontSize: 12, fontWeight: "800", color: "#5B42B6" },
   status: { marginTop: 12, fontSize: 14, color: "#6E6875" },
   statsRow: { flexDirection: "row", paddingVertical: 16, borderRadius: 22, backgroundColor: "#FFFFFF" },
+  eventCard: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginTop: 12, padding: 16, borderRadius: 22, backgroundColor: "#DDEBFF" }, eventEyebrow: { fontSize: 8, fontWeight: "900", letterSpacing: 1.1, color: "#4672A8" }, eventTitle: { marginTop: 4, fontSize: 15, fontWeight: "900", color: "#243C5C" }, eventDetail: { maxWidth: 250, marginTop: 5, fontSize: 9, lineHeight: 13, color: "#5C7190" }, eventProgress: { fontSize: 21, fontWeight: "900", color: "#3F6FA9" },
   affinityCard: { marginTop: 12, padding: 17, borderRadius: 22, backgroundColor: "#FFF" }, affinityTop: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" }, affinityTitle: { fontSize: 15, fontWeight: "900", color: "#342D3C" }, affinityPoints: { fontSize: 10, fontWeight: "900", color: "#D65B81" }, affinityTrack: { height: 10, marginTop: 12, overflow: "hidden", borderRadius: 5, backgroundColor: "#F1DDE5" }, affinityFill: { height: "100%", borderRadius: 5, backgroundColor: "#E7648E" }, milestoneRow: { flexDirection: "row", justifyContent: "space-between", marginTop: 15 }, milestone: { width: "31%", alignItems: "center" }, milestoneLock: { width: 35, height: 35, borderRadius: 18, alignItems: "center", justifyContent: "center", backgroundColor: "#EEEAF2" }, milestoneIcon: { fontSize: 13 }, milestoneLevel: { marginTop: 5, fontSize: 8, fontWeight: "900", color: "#D65B81" }, milestoneName: { marginTop: 2, fontSize: 8, textAlign: "center", color: "#756D7B" },
   stat: { flex: 1, alignItems: "center", borderRightWidth: StyleSheet.hairlineWidth, borderRightColor: "#DED9E5" },
   statValue: { fontSize: 22, fontWeight: "900", color: "#322B3B" },

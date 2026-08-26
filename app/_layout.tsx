@@ -1,12 +1,15 @@
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { Stack } from 'expo-router';
+import * as Notifications from 'expo-notifications';
+import { router, Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import { useEffect } from 'react';
 import 'react-native-reanimated';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { LanguageProvider } from '@/hooks/use-language';
 import { GameProgressProvider } from '@/hooks/use-game-progress';
 import { AffinityProvider } from '@/hooks/use-affinity';
+import { LifeProgressProvider } from '@/hooks/use-life-progress';
 
 export const unstable_settings = {
   anchor: '(tabs)',
@@ -14,10 +17,16 @@ export const unstable_settings = {
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
+  useEffect(() => {
+    const open = (notification: Notifications.Notification) => { const url = notification.request.content.data?.url; if (typeof url === 'string') router.push(url as never); };
+    const last = Notifications.getLastNotificationResponse(); if (last?.notification) open(last.notification);
+    const subscription = Notifications.addNotificationResponseReceivedListener((response) => open(response.notification));
+    return () => subscription.remove();
+  }, []);
 
   return (
     <LanguageProvider>
-      <GameProgressProvider><AffinityProvider><ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+      <GameProgressProvider><AffinityProvider><LifeProgressProvider><ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
         <Stack>
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="character/[id]" options={{ headerShown: false }} />
@@ -26,9 +35,10 @@ export default function RootLayout() {
           <Stack.Screen name="memory/[id]" options={{ headerShown: false }} />
           <Stack.Screen name="me/[section]" options={{ headerShown: false }} />
           <Stack.Screen name="wardrobe/[id]" options={{ headerShown: false }} />
+          <Stack.Screen name="life" options={{ headerShown: false }} />
         </Stack>
         <StatusBar style="auto" />
-      </ThemeProvider></AffinityProvider></GameProgressProvider>
+      </ThemeProvider></LifeProgressProvider></AffinityProvider></GameProgressProvider>
     </LanguageProvider>
   );
 }

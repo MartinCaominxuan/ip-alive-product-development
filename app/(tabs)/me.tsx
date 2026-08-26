@@ -9,18 +9,21 @@ import { getAccountTitle, getNextAccountTitle } from "@/features/account";
 import { getCharacterViews } from "@/features/characters";
 import { useLanguage } from "@/hooks/use-language";
 import { useGameProgress } from "@/hooks/use-game-progress";
+import { useLifeProgress } from "@/hooks/use-life-progress";
 
-const LEVEL_EXPERIENCE_TARGET = 3200;
+const LEVEL_EXPERIENCE_TARGET = 10000;
 
 export default function MeScreen() {
   const { text } = useLanguage();
-  const { bubbles, lifetimeScore } = useGameProgress();
-  const title = getAccountTitle(demoAccount.level);
-  const nextTitle = getNextAccountTitle(demoAccount.level);
+  const { bubbles, lifetimeScore, accountExperience, accountLevel } = useGameProgress();
+  const life = useLifeProgress();
+  const title = getAccountTitle(accountLevel);
+  const nextTitle = getNextAccountTitle(accountLevel);
   const characterViews = getCharacterViews();
   const unlockedCharacters = characterViews.filter(({ companion }) => companion.unlocked).length;
   const totalCharacters = Object.values(SERIES_INFO).reduce((sum, series) => sum + series.total, 0);
-  const levelProgress = Math.min(demoAccount.experience / LEVEL_EXPERIENCE_TARGET, 1);
+  const experienceInLevel = accountExperience % LEVEL_EXPERIENCE_TARGET;
+  const levelProgress = experienceInLevel / LEVEL_EXPERIENCE_TARGET;
   const collectionProgress = totalCharacters === 0 ? 0 : unlockedCharacters / totalCharacters;
 
   return (
@@ -29,7 +32,7 @@ export default function MeScreen() {
       <Pressable style={styles.identityCard} onPress={() => router.push({ pathname: "/me/[section]", params: { section: "level" } })}>
         <View style={styles.levelOrb}>
           <Text style={styles.levelCaption}>LEVEL</Text>
-          <Text style={styles.levelNumber}>{demoAccount.level}</Text>
+          <Text style={styles.levelNumber}>{accountLevel}</Text>
         </View>
         <View style={styles.identityCopy}>
           <Text style={styles.eyebrow}>{text("COLLECTOR PROFILE", "收藏家档案")}</Text>
@@ -43,13 +46,13 @@ export default function MeScreen() {
       <Pressable style={styles.levelCard} onPress={() => router.push({ pathname: "/me/[section]", params: { section: "level" } })}>
         <View style={styles.rowBetween}>
           <Text style={styles.sectionTitle}>{text("Account Level", "账号等级")}</Text>
-          <Text style={styles.experienceText}>{demoAccount.experience.toLocaleString()} / {LEVEL_EXPERIENCE_TARGET.toLocaleString()} EXP</Text>
+          <Text style={styles.experienceText}>{experienceInLevel.toLocaleString()} / {LEVEL_EXPERIENCE_TARGET.toLocaleString()} EXP</Text>
         </View>
         <View style={styles.levelTrack}>
           <View style={[styles.levelFill, { width: `${levelProgress * 100}%` }]} />
         </View>
         <Text style={styles.levelHint}>
-          {nextTitle ? text(`${nextTitle.minimumLevel - demoAccount.level} levels until “${nextTitle.name}”`, `距离下一称号还差 ${nextTitle.minimumLevel - demoAccount.level} 级`) : text("Highest title achieved", "已获得最高称号")}
+          {nextTitle ? text(`${nextTitle.minimumLevel - accountLevel} levels until “${nextTitle.name}”`, `距离下一称号还差 ${nextTitle.minimumLevel - accountLevel} 级`) : text("Highest title achieved", "已获得最高称号")}
         </Text>
       </Pressable>
 
@@ -65,6 +68,7 @@ export default function MeScreen() {
         <View><Text style={styles.shopEyebrow}>BUBBLE SHOP</Text><Text style={styles.shopTitle}>{text("Discover outfits & limited drops", "探索服装与限定商品")}</Text></View>
         <Text style={styles.shopArrow}>›</Text>
       </Pressable>
+      <Pressable style={styles.lifeButton} onPress={() => router.push("/life" as never)}><View><Text style={styles.lifeEyebrow}>{text("LIFE COMPANION", "生活陪伴")}</Text><Text style={styles.lifeTitle}>{text("Goals, schedule, budget & health", "目标、日程、预算与健康")}</Text><Text style={styles.lifeText}>{text("Real records · Smart daily allocation · Achievements", "真实记录 · 智能每日分配 · 生活成就")}</Text></View><Text style={styles.lifeArrow}>›</Text></Pressable>
 
       <View style={styles.sectionTitleRow}>
         <Text style={styles.sectionHeading}>{text("My world journey", "我的世界足迹")}</Text>
@@ -106,6 +110,7 @@ export default function MeScreen() {
         <Achievement icon="🗺️" name={text("Traveler", "旅行家")} tone="#E8F1FC" onPress={() => router.push({ pathname: "/me/[section]", params: { section: "achievements" } })} />
         <Achievement icon="✨" name={text("Series Star", "系列之星")} tone="#F4ECFF" onPress={() => router.push({ pathname: "/me/[section]", params: { section: "achievements" } })} />
       </View>
+      <Pressable style={styles.lifeAchievement} onPress={() => router.push("/life" as never)}><View><Text style={styles.lifeAchievementTitle}>{text("Life achievements", "生活成就")}</Text><Text style={styles.lifeAchievementText}>{text("Earned through real tasks, budgeting and health actions", "通过真实任务、预算和健康行动获得")}</Text></View><Text style={styles.lifeAchievementCount}>{life.achievements.length}/7 ›</Text></Pressable>
     </ScrollView>
   );
 }
@@ -149,6 +154,7 @@ const styles = StyleSheet.create({
   shopEyebrow: { fontSize: 9, fontWeight: "800", letterSpacing: 1.2, color: "#D7CEFF" },
   shopTitle: { marginTop: 3, fontSize: 14, fontWeight: "800", color: "#FFFFFF" },
   shopArrow: { fontSize: 30, color: "#FFFFFF" },
+  lifeButton: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", padding: 18, borderRadius: 21, backgroundColor: "#DDF2E9" }, lifeEyebrow: { fontSize: 8, fontWeight: "900", letterSpacing: 1.3, color: "#377662" }, lifeTitle: { marginTop: 4, fontSize: 15, fontWeight: "900", color: "#244D40" }, lifeText: { marginTop: 4, fontSize: 9, color: "#5A7D72" }, lifeArrow: { fontSize: 29, color: "#3E806A" },
   mapCard: { overflow: "hidden", padding: 18, borderRadius: 22, backgroundColor: "#DFF3EE" },
   mapBackdrop: { position: "absolute", right: 12, top: 6, fontSize: 20, lineHeight: 28, color: "#58A997", opacity: 0.4 },
   mapCopy: { maxWidth: "75%" },
@@ -179,4 +185,5 @@ const styles = StyleSheet.create({
   achievementIcon: { width: 58, height: 58, borderRadius: 29, alignItems: "center", justifyContent: "center" },
   achievementEmoji: { fontSize: 26 },
   achievementName: { marginTop: 8, fontSize: 11, fontWeight: "700", textAlign: "center", color: "#514A59" },
+  lifeAchievement: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", padding: 16, borderRadius: 19, backgroundColor: "#E7F4EE" }, lifeAchievementTitle: { fontSize: 13, fontWeight: "900", color: "#2D5E4F" }, lifeAchievementText: { maxWidth: 250, marginTop: 3, fontSize: 9, color: "#668277" }, lifeAchievementCount: { fontSize: 13, fontWeight: "900", color: "#3C7864" },
 });
