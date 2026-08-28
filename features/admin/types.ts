@@ -1,6 +1,6 @@
 export interface ContentRecord<TPayload> {
   id: string;
-  type: "character" | "outfit" | "destination" | "event" | "match3-level" | "reward";
+  type: "character" | "character-voice" | "outfit" | "destination" | "event" | "match3-level" | "reward";
   version: number;
   status: "draft" | "published" | "archived";
   payload: TPayload;

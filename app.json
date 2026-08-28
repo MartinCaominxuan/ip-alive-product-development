@@ -2,7 +2,7 @@
   "expo": {
     "name": "ip-alive",
     "slug": "ip-alive",
-    "version": "1.0.0",
+    "version": "0.96.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "ipalive",
@@ -37,6 +37,16 @@
           "dark": {
             "backgroundColor": "#000000"
           }
+        }
+      ],
+      "expo-audio",
+      "expo-notifications",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow IP Alive to select a meal photo for your private local food log.",
+          "cameraPermission": "Allow IP Alive to take a meal photo for your private local food log.",
+          "microphonePermission": false
         }
       ]
     ],

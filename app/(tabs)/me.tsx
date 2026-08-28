@@ -1,119 +1,140 @@
 import { router } from "expo-router";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
-import { demoAccount, demoAccountStats } from "@/data/account";
+import LanguageToggle from "@/components/LanguageToggle";
+import { demoAccountStats } from "@/data/account";
 import { SERIES_INFO } from "@/data/characters";
 import { visitedPlaces } from "@/data/user-journey";
 import { getAccountTitle, getNextAccountTitle } from "@/features/account";
 import { getCharacterViews } from "@/features/characters";
+import { useLanguage } from "@/hooks/use-language";
+import { useGameProgress } from "@/hooks/use-game-progress";
+import { useLifeProgress } from "@/hooks/use-life-progress";
+import { useProfile } from "@/hooks/use-profile";
+import { useUnlocks } from "@/hooks/use-unlocks";
 
-const LEVEL_EXPERIENCE_TARGET = 3200;
+const LEVEL_EXPERIENCE_TARGET = 10000;
 
 export default function MeScreen() {
-  const title = getAccountTitle(demoAccount.level);
-  const nextTitle = getNextAccountTitle(demoAccount.level);
+  const { text } = useLanguage();
+  const { bubbles, lifetimeScore, accountExperience, accountLevel } = useGameProgress();
+  const life = useLifeProgress();
+  const { profile } = useProfile();
+  const unlocks = useUnlocks();
+  const title = getAccountTitle(accountLevel);
+  const nextTitle = getNextAccountTitle(accountLevel);
   const characterViews = getCharacterViews();
-  const unlockedCharacters = characterViews.filter(({ companion }) => companion.unlocked).length;
+  const unlockedCharacters = characterViews.filter(({ character }) => unlocks.isUnlocked(character.id)).length;
   const totalCharacters = Object.values(SERIES_INFO).reduce((sum, series) => sum + series.total, 0);
-  const levelProgress = Math.min(demoAccount.experience / LEVEL_EXPERIENCE_TARGET, 1);
+  const experienceInLevel = accountExperience % LEVEL_EXPERIENCE_TARGET;
+  const levelProgress = experienceInLevel / LEVEL_EXPERIENCE_TARGET;
   const collectionProgress = totalCharacters === 0 ? 0 : unlockedCharacters / totalCharacters;
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-      <View style={styles.identityCard}>
+      <View style={styles.pageTop}><Text style={styles.pageTitle}>{text("Me", "我的")}</Text><LanguageToggle /></View>
+      <Pressable style={styles.identityCard} onPress={() => router.push({ pathname: "/me/[section]", params: { section: "level" } })}>
         <View style={styles.levelOrb}>
           <Text style={styles.levelCaption}>LEVEL</Text>
-          <Text style={styles.levelNumber}>{demoAccount.level}</Text>
+          <Text style={styles.levelNumber}>{accountLevel}</Text>
         </View>
         <View style={styles.identityCopy}>
-          <Text style={styles.eyebrow}>COLLECTOR PROFILE</Text>
-          <Text style={styles.name}>{demoAccount.displayName}</Text>
+          <Text style={styles.eyebrow}>{text("COLLECTOR PROFILE", "收藏家档案")}</Text>
+          <Text style={styles.name}>{profile.displayName}</Text>
           <View style={[styles.titleBadge, { backgroundColor: title.accent }]}>
-            <Text style={styles.titleBadgeText}>✦ {title.name}</Text>
+          <Text style={styles.titleBadgeText}>✦ {text(title.name, title.name === "World Weaver" ? "世界织梦者" : title.name === "Time Friend" ? "时空旅伴" : "收藏家")}</Text>
           </View>
         </View>
-      </View>
+      </Pressable>
 
-      <View style={styles.levelCard}>
+      <Pressable style={styles.levelCard} onPress={() => router.push({ pathname: "/me/[section]", params: { section: "level" } })}>
         <View style={styles.rowBetween}>
-          <Text style={styles.sectionTitle}>Account Level</Text>
-          <Text style={styles.experienceText}>{demoAccount.experience.toLocaleString()} / {LEVEL_EXPERIENCE_TARGET.toLocaleString()} EXP</Text>
+          <Text style={styles.sectionTitle}>{text("Account Level", "账号等级")}</Text>
+          <Text style={styles.experienceText}>{experienceInLevel.toLocaleString()} / {LEVEL_EXPERIENCE_TARGET.toLocaleString()} EXP</Text>
         </View>
         <View style={styles.levelTrack}>
           <View style={[styles.levelFill, { width: `${levelProgress * 100}%` }]} />
         </View>
         <Text style={styles.levelHint}>
-          {nextTitle ? `${nextTitle.minimumLevel - demoAccount.level} levels until “${nextTitle.name}”` : "Highest title achieved"}
+          {nextTitle ? text(`${nextTitle.minimumLevel - accountLevel} levels until “${nextTitle.name}”`, `距离下一称号还差 ${nextTitle.minimumLevel - accountLevel} 级`) : text("Highest title achieved", "已获得最高称号")}
         </Text>
-      </View>
-
-      <View style={styles.walletCard}>
-        <View>
-          <Text style={styles.walletLabel}>BUBBLE BALANCE</Text>
-          <Text style={styles.walletValue}>◉ {demoAccountStats.bubbles.toLocaleString()}</Text>
-        </View>
-        <View style={styles.walletDecoration}><Text style={styles.walletDecorationText}>B</Text></View>
-      </View>
-      <Pressable style={styles.shopButton} onPress={() => router.push("/shop")}>
-        <View><Text style={styles.shopEyebrow}>BUBBLE SHOP</Text><Text style={styles.shopTitle}>Discover outfits & limited drops</Text></View>
-        <Text style={styles.shopArrow}>›</Text>
       </Pressable>
 
-      <View style={styles.sectionTitleRow}>
-        <Text style={styles.sectionHeading}>My world journey</Text>
-        <Text style={styles.viewAll}>{visitedPlaces.length} places lit</Text>
-      </View>
-      <View style={styles.mapCard}>
-        <Text style={styles.mapBackdrop}>·    ◉       ·  ◉    ·{`\n`}   ·      ◉       ·</Text>
-        <View style={styles.mapCopy}><Text style={styles.mapTitle}>Your collection across the world</Text><Text style={styles.mapText}>Stores and events light up automatically after a verified purchase or check-in.</Text></View>
-        <View style={styles.placeRow}>{visitedPlaces.map((place) => <View key={place.id} style={styles.placePill}><Text style={styles.placeText}>● {place.city}</Text></View>)}</View>
-      </View>
+      <Pressable style={styles.walletCard} onPress={() => router.push({ pathname: "/me/[section]", params: { section: "wallet" } })}>
+        <View>
+          <Text style={styles.walletLabel}>{text("BUBBLE BALANCE", "BUBBLE 余额")}</Text>
+          <Text style={styles.walletValue}>◉ {bubbles.toLocaleString()}</Text>
+        </View>
+        <View style={styles.walletDecoration}><Text style={styles.walletDecorationText}>B</Text></View>
+      </Pressable>
+      <View style={styles.gameAccount}><View><Text style={styles.gameAccountLabel}>{text("MATCH ACCOUNT", "三消账户")}</Text><Text style={styles.gameAccountValue}>{lifetimeScore.toLocaleString()}</Text></View><Text style={styles.gameAccountUnit}>{text("lifetime points", "累计积分")}</Text></View>
+      <Pressable style={styles.shopButton} onPress={() => router.push("/shop")}>
+        <View><Text style={styles.shopEyebrow}>BUBBLE SHOP</Text><Text style={styles.shopTitle}>{text("Discover outfits & limited drops", "探索服装与限定商品")}</Text></View>
+        <Text style={styles.shopArrow}>›</Text>
+      </Pressable>
+      <Pressable style={styles.lifeButton} onPress={() => router.push("/life" as never)}><View><Text style={styles.lifeEyebrow}>{text("LIFE COMPANION", "生活陪伴")}</Text><Text style={styles.lifeTitle}>{text("Goals, schedule, budget & health", "目标、日程、预算与健康")}</Text><Text style={styles.lifeText}>{text("Real records · Smart daily allocation · Achievements", "真实记录 · 智能每日分配 · 生活成就")}</Text></View><Text style={styles.lifeArrow}>›</Text></Pressable>
 
-      <Text style={styles.sectionHeading}>My collection</Text>
-      <View style={styles.collectionCard}>
+      <View style={styles.sectionTitleRow}>
+        <Text style={styles.sectionHeading}>{text("My world journey", "我的世界足迹")}</Text>
+        <Text style={styles.viewAll}>{text(`${visitedPlaces.length} places lit`, `已点亮 ${visitedPlaces.length} 个地点`)}</Text>
+      </View>
+      <Pressable style={styles.mapCard} onPress={() => router.push({ pathname: "/me/[section]", params: { section: "journey" } })}>
+        <Text style={styles.mapBackdrop}>·    ◉       ·  ◉    ·{`\n`}   ·      ◉       ·</Text>
+        <View style={styles.mapCopy}><Text style={styles.mapTitle}>{text("Your collection across the world", "你的全球收藏足迹")}</Text><Text style={styles.mapText}>{text("Stores and events light up automatically after a verified purchase or check-in.", "完成验证购买或活动签到后，地点会自动点亮。")}</Text></View>
+        <View style={styles.placeRow}>{visitedPlaces.map((place) => <View key={place.id} style={styles.placePill}><Text style={styles.placeText}>● {place.city}</Text></View>)}</View>
+      </Pressable>
+
+      <Text style={styles.sectionHeading}>{text("My collection", "我的收藏")}</Text>
+      <Pressable style={styles.collectionCard} onPress={() => router.push({ pathname: "/me/[section]", params: { section: "collection" } })}>
         <View style={styles.collectionRing}>
           <Text style={styles.collectionPercent}>{Math.round(collectionProgress * 100)}%</Text>
-          <Text style={styles.collectionRingLabel}>COMPLETE</Text>
+          <Text style={styles.collectionRingLabel}>{text("COMPLETE", "完成度")}</Text>
         </View>
         <View style={styles.collectionCopy}>
-          <Text style={styles.collectionCount}>{unlockedCharacters} / {totalCharacters} characters</Text>
-          <Text style={styles.collectionDescription}>Every physical collectible expands your digital world.</Text>
+          <Text style={styles.collectionCount}>{unlockedCharacters} / {totalCharacters} {text("characters", "个角色")}</Text>
+          <Text style={styles.collectionDescription}>{text("Every physical collectible expands your digital world.", "每一个实体收藏都会扩展你的数字世界。")}</Text>
           <View style={styles.collectionTrack}>
             <View style={[styles.collectionFill, { width: `${collectionProgress * 100}%` }]} />
           </View>
         </View>
-      </View>
+      </Pressable>
 
       <View style={styles.statsGrid}>
-        <StatCard icon="◎" value={visitedPlaces.length} label="Places" />
-        <StatCard icon="✉" value={demoAccountStats.postcards} label="Postcards" />
-        <StatCard icon="♢" value={demoAccountStats.outfits} label="Outfits" />
+        <StatCard icon="◎" value={visitedPlaces.length} label={text("Places", "地点")} onPress={() => router.push({ pathname: "/me/[section]", params: { section: "journey" } })} />
+        <StatCard icon="✉" value={demoAccountStats.postcards} label={text("Postcards", "明信片")} onPress={() => router.push({ pathname: "/me/[section]", params: { section: "postcards" } })} />
+        <StatCard icon="♢" value={demoAccountStats.outfits} label={text("Outfits", "服装")} onPress={() => router.push({ pathname: "/me/[section]", params: { section: "outfits" } })} />
       </View>
 
       <View style={styles.sectionTitleRow}>
-        <Text style={styles.sectionHeading}>Showcase</Text>
-        <Text style={styles.viewAll}>3 badges earned</Text>
+        <Text style={styles.sectionHeading}>{text("Showcase", "荣誉展示")}</Text>
+        <Text style={styles.viewAll}>{text("3 badges earned", "已获得 3 枚徽章")}</Text>
       </View>
       <View style={styles.achievementRow}>
-        <Achievement icon="🌱" name="First Bond" tone="#E7F6EC" />
-        <Achievement icon="🗺️" name="Traveler" tone="#E8F1FC" />
-        <Achievement icon="✨" name="Series Star" tone="#F4ECFF" />
+        <Achievement icon="🌱" name={text("First Bond", "初次羁绊")} tone="#E7F6EC" onPress={() => router.push({ pathname: "/me/[section]", params: { section: "achievements" } })} />
+        <Achievement icon="🗺️" name={text("Traveler", "旅行家")} tone="#E8F1FC" onPress={() => router.push({ pathname: "/me/[section]", params: { section: "achievements" } })} />
+        <Achievement icon="✨" name={text("Series Star", "系列之星")} tone="#F4ECFF" onPress={() => router.push({ pathname: "/me/[section]", params: { section: "achievements" } })} />
       </View>
+      <Pressable style={styles.lifeAchievement} onPress={() => router.push("/life" as never)}><View><Text style={styles.lifeAchievementTitle}>{text("Life achievements", "生活成就")}</Text><Text style={styles.lifeAchievementText}>{text("Earned through real tasks, budgeting and health actions", "通过真实任务、预算和健康行动获得")}</Text></View><Text style={styles.lifeAchievementCount}>{life.achievements.length}/7 ›</Text></Pressable>
+      <View style={styles.accountActions}><Pressable style={styles.accountAction} onPress={() => router.push("/profile" as never)}><Text style={styles.accountIcon}>◎</Text><Text style={styles.accountTitle}>{text("Profile", "个人档案")}</Text><Text style={styles.accountText}>{text("Identity & history start", "身份与记录起点")}</Text></Pressable><Pressable style={styles.accountAction} onPress={() => router.push("/annual-summary" as never)}><Text style={styles.accountIcon}>✦</Text><Text style={styles.accountTitle}>{text("Annual story", "年度故事")}</Text><Text style={styles.accountText}>{text("Real activity timeline", "真实活动时间线")}</Text></Pressable></View>
+      <Pressable style={styles.dataButton} onPress={() => router.push("/data-management" as never)}><View><Text style={styles.dataEyebrow}>{text("LOCAL DATA VAULT","本地数据保险箱")}</Text><Text style={styles.dataTitle}>{text("Backup, transfer & recovery","备份、迁移与恢复")}</Text></View><Text style={styles.dataArrow}>›</Text></Pressable>
+      <Pressable style={styles.dataButton} onPress={() => router.push("/quality-center" as never)}><View><Text style={styles.dataEyebrow}>{text("CONTENT GOVERNANCE","内容治理")}</Text><Text style={styles.dataTitle}>{text("Character quality & release gate","角色评测与发布门槛")}</Text></View><Text style={styles.dataArrow}>›</Text></Pressable>
     </ScrollView>
   );
 }
 
-function StatCard({ icon, value, label }: { icon: string; value: number; label: string }) {
-  return <View style={styles.statCard}><Text style={styles.statIcon}>{icon}</Text><Text style={styles.statValue}>{value}</Text><Text style={styles.statLabel}>{label}</Text></View>;
+function StatCard({ icon, value, label, onPress }: { icon: string; value: number; label: string; onPress: () => void }) {
+  return <Pressable style={styles.statCard} onPress={onPress}><Text style={styles.statIcon}>{icon}</Text><Text style={styles.statValue}>{value}</Text><Text style={styles.statLabel}>{label}</Text></Pressable>;
 }
 
-function Achievement({ icon, name, tone }: { icon: string; name: string; tone: string }) {
-  return <View style={styles.achievement}><View style={[styles.achievementIcon, { backgroundColor: tone }]}><Text style={styles.achievementEmoji}>{icon}</Text></View><Text style={styles.achievementName}>{name}</Text></View>;
+function Achievement({ icon, name, tone, onPress }: { icon: string; name: string; tone: string; onPress: () => void }) {
+  return <Pressable style={styles.achievement} onPress={onPress}><View style={[styles.achievementIcon, { backgroundColor: tone }]}><Text style={styles.achievementEmoji}>{icon}</Text></View><Text style={styles.achievementName}>{name}</Text></Pressable>;
 }
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: "#F6F4FA" },
   content: { paddingHorizontal: 18, paddingTop: 62, paddingBottom: 44, gap: 16 },
+  pageTop: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
+  pageTitle: { fontSize: 29, fontWeight: "900", color: "#2C2632" },
   identityCard: { flexDirection: "row", alignItems: "center", padding: 20, borderRadius: 26, backgroundColor: "#241B3A" },
   levelOrb: { width: 92, height: 92, borderRadius: 46, alignItems: "center", justifyContent: "center", borderWidth: 3, borderColor: "#BFA9FF", backgroundColor: "#352654" },
   levelCaption: { fontSize: 10, fontWeight: "800", letterSpacing: 1.4, color: "#CFC2F7" },
@@ -135,10 +156,12 @@ const styles = StyleSheet.create({
   walletValue: { marginTop: 5, fontSize: 29, fontWeight: "900", color: "#5D4300" },
   walletDecoration: { width: 57, height: 57, borderRadius: 29, alignItems: "center", justifyContent: "center", backgroundColor: "#F7C948" },
   walletDecorationText: { fontSize: 27, fontWeight: "900", color: "#6B4B00" },
+  gameAccount: { flexDirection: "row", alignItems: "flex-end", justifyContent: "space-between", paddingHorizontal: 17, paddingVertical: 14, borderRadius: 18, backgroundColor: "#E9E4F8" }, gameAccountLabel: { fontSize: 8, fontWeight: "900", letterSpacing: 1.3, color: "#7964B7" }, gameAccountValue: { marginTop: 3, fontSize: 23, fontWeight: "900", color: "#3B3156" }, gameAccountUnit: { fontSize: 9, color: "#766D83" },
   shopButton: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 18, paddingVertical: 15, borderRadius: 19, backgroundColor: "#6D4FE3" },
   shopEyebrow: { fontSize: 9, fontWeight: "800", letterSpacing: 1.2, color: "#D7CEFF" },
   shopTitle: { marginTop: 3, fontSize: 14, fontWeight: "800", color: "#FFFFFF" },
   shopArrow: { fontSize: 30, color: "#FFFFFF" },
+  lifeButton: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", padding: 18, borderRadius: 21, backgroundColor: "#DDF2E9" }, lifeEyebrow: { fontSize: 8, fontWeight: "900", letterSpacing: 1.3, color: "#377662" }, lifeTitle: { marginTop: 4, fontSize: 15, fontWeight: "900", color: "#244D40" }, lifeText: { marginTop: 4, fontSize: 9, color: "#5A7D72" }, lifeArrow: { fontSize: 29, color: "#3E806A" },
   mapCard: { overflow: "hidden", padding: 18, borderRadius: 22, backgroundColor: "#DFF3EE" },
   mapBackdrop: { position: "absolute", right: 12, top: 6, fontSize: 20, lineHeight: 28, color: "#58A997", opacity: 0.4 },
   mapCopy: { maxWidth: "75%" },
@@ -169,4 +192,7 @@ const styles = StyleSheet.create({
   achievementIcon: { width: 58, height: 58, borderRadius: 29, alignItems: "center", justifyContent: "center" },
   achievementEmoji: { fontSize: 26 },
   achievementName: { marginTop: 8, fontSize: 11, fontWeight: "700", textAlign: "center", color: "#514A59" },
+  lifeAchievement: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", padding: 16, borderRadius: 19, backgroundColor: "#E7F4EE" }, lifeAchievementTitle: { fontSize: 13, fontWeight: "900", color: "#2D5E4F" }, lifeAchievementText: { maxWidth: 250, marginTop: 3, fontSize: 9, color: "#668277" }, lifeAchievementCount: { fontSize: 13, fontWeight: "900", color: "#3C7864" },
+  accountActions:{flexDirection:"row",gap:10},accountAction:{flex:1,padding:15,borderRadius:19,backgroundColor:"#FFFFFF"},accountIcon:{fontSize:18,fontWeight:"900",color:"#7459D1"},accountTitle:{marginTop:8,fontSize:13,fontWeight:"900",color:"#40364B"},accountText:{marginTop:3,fontSize:9,color:"#817789"},
+  dataButton: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", padding: 16, borderRadius: 19, backgroundColor: "#E8E3F4" }, dataEyebrow: { fontSize: 8, fontWeight: "900", letterSpacing: 1.1, color: "#7964B7" }, dataTitle: { marginTop: 4, fontSize: 13, fontWeight: "900", color: "#463A60" }, dataArrow: { fontSize: 25, color: "#705ABE" },
 });

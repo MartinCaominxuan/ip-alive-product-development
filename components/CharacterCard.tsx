@@ -13,6 +13,7 @@ type CharacterCardProps = {
   level: number;
   status: string;
   unlocked: boolean;
+  language?: "en" | "zh";
   onPress?: () => void;
 };
 
@@ -23,6 +24,7 @@ export default function CharacterCard({
   status,
   unlocked,
   onPress,
+  language = "en",
 }: CharacterCardProps) {
   const relationshipStage =
     getRelationshipStage(level);
@@ -62,20 +64,24 @@ export default function CharacterCard({
             numberOfLines={1}
             ellipsizeMode="tail"
         >
-          {unlocked ? `${relationshipStage.emoji} ${relationshipStage.name}` : "Locked character"}
+          {unlocked ? `${relationshipStage.emoji} ${language === "zh" ? relationshipNameZh(relationshipStage.name) : relationshipStage.name}` : language === "zh" ? "未解锁角色" : "Locked character"}
         </Text>
 
         <Text
           style={[styles.status, !unlocked && styles.textLocked]}
           numberOfLines={2}
         >
-          {unlocked ? status : "Unlock with a physical collectible"}
+          {unlocked ? status : language === "zh" ? "通过实体收藏品解锁" : "Unlock with a physical collectible"}
         </Text>
       </View>
 
       
     </Pressable>
   );
+}
+
+function relationshipNameZh(name: string) {
+  return ({ Stranger: "初识", Acquaintance: "相识", Friend: "朋友", "Close Friend": "挚友", Soulmate: "灵魂伙伴" } as Record<string, string>)[name] ?? name;
 }
 
 const styles = StyleSheet.create({

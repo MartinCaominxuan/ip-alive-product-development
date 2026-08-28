@@ -1,9 +1,11 @@
-export type SeriesId = "starter" | "series-a" | "series-b" | "series-c";
+export type SeriesId = "starter" | "time-travelers" | "series-a" | "series-b" | "series-c";
+export type CharacterEra = "ancient" | "modern" | "future";
 
 export interface Character {
   id: string;
   name: string;
   displayName: string;
+  displayNameZh?: string;
   emoji?: string;
   avatar?: string;
   worldId?: string;
@@ -12,6 +14,9 @@ export interface Character {
   level: number;
   experience: number;
   status: string;
+  statusZh?: string;
+  era?: CharacterEra;
+  homeYear?: number;
 }
 
 export interface Personality {
