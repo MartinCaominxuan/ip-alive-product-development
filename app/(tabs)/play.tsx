@@ -11,6 +11,7 @@ import { getCharacterViews } from "@/features/characters";
 import { useAffinity } from "@/hooks/use-affinity";
 import { useGameProgress } from "@/hooks/use-game-progress";
 import { useLanguage } from "@/hooks/use-language";
+import { useUnlocks } from "@/hooks/use-unlocks";
 
 const COLS = 6, ROWS = 7, START_MOVES = 22, TARGET = 6200, LEVEL_REWARD = 320;
 const LOOK: Record<Match3Tile, { color: string; symbol: string }> = { red: { color: "#F06A75", symbol: "♥" }, blue: { color: "#62A7E8", symbol: "◆" }, green: { color: "#67BE8A", symbol: "●" }, yellow: { color: "#F2C54D", symbol: "★" }, purple: { color: "#9B78E7", symbol: "✦" } };
@@ -19,11 +20,11 @@ const ART: Record<string, number> = { yunzhou: require("@/assets/characters/yunz
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export default function PlayScreen() {
-  const { id } = useLocalSearchParams<{ id?: string }>(); const { width } = useWindowDimensions(); const { language, text } = useLanguage(); const account = useGameProgress(); const { setSelectedCharacterId } = account; const affinity = useAffinity();
+  const { id } = useLocalSearchParams<{ id?: string }>(); const { width } = useWindowDimensions(); const { language, text } = useLanguage(); const account = useGameProgress(); const { setSelectedCharacterId } = account; const affinity = useAffinity(); const unlocks=useUnlocks();
   const swapSound = useAudioPlayer(require("@/assets/audio/swap.wav")); const matchSound = useAudioPlayer(require("@/assets/audio/match.wav")); const specialSound = useAudioPlayer(require("@/assets/audio/special.wav")); const completeSound = useAudioPlayer(require("@/assets/audio/complete.wav"));
-  const characters = getCharacterViews().filter(({ companion, character }) => companion.unlocked && character.era); const character = characters.find(({ character: item }) => item.id === account.selectedCharacterId)?.character ?? characters[0]?.character;
+  const characters = getCharacterViews().filter(({ character }) => unlocks.isUnlocked(character.id) && character.era); const character = characters.find(({ character: item }) => item.id === account.selectedCharacterId)?.character ?? characters[0]?.character;
   const [board, setBoard] = useState<(MatchCell | null)[]>(() => createBoard(ROWS, COLS)); const [selected, setSelected] = useState<number>(); const [moves, setMoves] = useState(START_MOVES); const [score, setScore] = useState(0); const [message, setMessage] = useState(""); const [busy, setBusy] = useState(false); const [rewarded, setRewarded] = useState(false); const [mode, setMode] = useState<"level" | "endless">("level"); const startedAt = useRef(Date.now());
-  useEffect(() => { if (id) setSelectedCharacterId(id); }, [id, setSelectedCharacterId]);
+  useEffect(() => { if (id&&unlocks.isUnlocked(id)) setSelectedCharacterId(id); }, [id, setSelectedCharacterId, unlocks]);
   const name = language === "zh" ? character?.displayNameZh ?? character?.displayName : character?.displayName; const size = Math.min(54, (width - 54) / COLS);
   const play = async (player: ReturnType<typeof useAudioPlayer>) => { await player.seekTo(0); player.play(); };
   function reset(nextMode = mode) { setMode(nextMode); setBoard(createBoard(ROWS, COLS)); setSelected(undefined); setMoves(START_MOVES); setScore(0); setMessage(""); setRewarded(false); setBusy(false); startedAt.current = Date.now(); }

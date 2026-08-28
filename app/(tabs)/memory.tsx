@@ -5,17 +5,23 @@ import LanguageToggle from "@/components/LanguageToggle";
 import { memories } from "@/data/memories";
 import { characterNamesZh } from "@/data/localized-content";
 import { useLanguage } from "@/hooks/use-language";
+import { useChatHistory } from "@/hooks/use-chat-history";
+import { getCharacterViewById } from "@/features/characters";
 
 export default function MemoryScreen() {
   const { language, text } = useLanguage();
+  const history = useChatHistory();
+  const recentExchanges = history.messages.filter((message)=>message.sender==="character"&&message.language===language).slice(-6).reverse();
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
       <View style={styles.header}><View><Text style={styles.title}>{text("Memories", "回忆")}</Text><Text style={styles.subtitle}>{text("Moments your relationships made worth keeping.", "值得被留下的陪伴片段。")}</Text></View><LanguageToggle /></View>
       <View style={styles.summary}>
-        <Text style={styles.summaryNumber}>{memories.length}</Text><Text style={styles.summaryLabel}>{text("MEMORIES SAVED", "已保存回忆")}</Text>
+        <Text style={styles.summaryNumber}>{memories.length+recentExchanges.length}</Text><Text style={styles.summaryLabel}>{text("MEMORIES & CONVERSATIONS", "回忆与真实对话")}</Text>
         <View style={styles.timelineLine} />
       </View>
+      {recentExchanges.length>0&&<><Text style={styles.sectionTitle}>{text("Recent conversations", "最近的真实对话")}</Text>{recentExchanges.map((message)=>{const character=getCharacterViewById(message.characterId)?.character;const name=language==="zh"?character?.displayNameZh??character?.displayName:character?.displayName;return <View key={message.id} style={styles.chatMemory}><View style={styles.chatTop}><Text style={styles.chatName}>{character?.emoji} {name}</Text><Text style={styles.date}>{message.createdAt.slice(0,10)}</Text></View><Text style={styles.chatText}>{message.text}</Text><Text style={styles.persisted}>{text("Saved from conversation", "来自已保存对话")}</Text></View>})}</>}
+      <Text style={styles.sectionTitle}>{text("Story memories", "故事回忆")}</Text>
       {memories.map((memory, index) => (
         <Pressable key={memory.id} style={styles.card} onPress={() => router.push({ pathname: "/memory/[id]", params: { id: memory.id } })}>
           <View style={styles.timelineColumn}><View style={styles.dot} />{index < memories.length - 1 && <View style={styles.connector} />}</View>
@@ -41,6 +47,7 @@ const styles = StyleSheet.create({
   summaryNumber: { fontSize: 33, fontWeight: "900", color: "#FFFFFF" },
   summaryLabel: { marginTop: 2, fontSize: 9, fontWeight: "900", letterSpacing: 1.4, color: "#C4B5ED" },
   timelineLine: { position: "absolute", right: -20, top: 30, width: 170, height: 3, transform: [{ rotate: "-12deg" }], backgroundColor: "#745BDD" },
+  sectionTitle:{marginTop:5,marginBottom:11,fontSize:17,fontWeight:"900",color:"#342D3A"},chatMemory:{marginBottom:9,padding:16,borderRadius:19,backgroundColor:"#EEE8FA"},chatTop:{flexDirection:"row",alignItems:"center",justifyContent:"space-between"},chatName:{fontSize:10,fontWeight:"900",color:"#5D4A85"},chatText:{marginTop:9,fontSize:12,lineHeight:18,color:"#42384C"},persisted:{marginTop:7,fontSize:8,fontWeight:"800",color:"#8877AA"},
   card: { flexDirection: "row", minHeight: 152 },
   timelineColumn: { width: 24, alignItems: "center" },
   dot: { width: 12, height: 12, marginTop: 21, borderRadius: 6, borderWidth: 3, borderColor: "#CDBFFF", backgroundColor: "#6D4FE3" },

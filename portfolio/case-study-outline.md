@@ -1,26 +1,32 @@
-# Case Study Outline
+# IP Alive — Graduate Portfolio Case Study Outline
 
-## Purpose
+## Framing
 
-Provide a concise structure for a future portfolio case study about the IP Alive product-development process.
+Present IP Alive as an independent, zero-recurring-cost high-fidelity prototype investigating how a physical collectible might become a persistent digital character relationship. Do not imply partnership or commercial validation.
 
-## Project Status Note
+## Personal and academic motivation
 
-This project is private, exploratory, and not affiliated with any named IP company. Any references to real companies should be treated only as hypothetical examples or future case-study candidates, not clients or partners.
+- Honors study: **Waiting Together: A Feasibility and Preliminary Outcomes Study of a Four-Session ACL™ Dyadic Intervention for College Students Facing Academic and Career Uncertainty.**
+- Shared inquiry: repeated relational processes, stability, and uncertainty.
+- Reflexivity: two major interpersonal traumas influenced interest in predictability and continuity.
+- Boundary: personal experience motivates the question; it does not prove AI relationships are superior or clinically beneficial.
 
-## Guiding Questions
+## Product problem and response
 
-- What was the design challenge?
-- What research was planned or conducted?
-- What product decisions were made and why?
-- What ethical tradeoffs were considered?
+A collectible may create a strong acquisition moment but limited continuing interaction. IP Alive prototypes physical-to-digital unlock, original characters, bond progression, persistent chat and Memory, letters/events, Match-3 rewards, wardrobe, Life tools, annual story, backup, and a character quality center.
 
-## Assumptions and Hypotheses
+## Systems thinking
 
-- Assumption: The case study should emphasize process quality rather than unsupported success claims.
+Explain relationship versus paid progression; content constitution; AI input/output guards; regression tests; local versus server authority; and provider-neutral handoff interfaces.
 
-## Placeholders
+## Evidence
 
-- Evidence to gather:
-- Decisions to revisit:
-- Open risks:
+Use survey results only after cleaning and analysis. Distinguish survey evidence, usability findings, implementation evidence, and reflection. Include disconfirming responses and sample limitations.
+
+## Limitations
+
+Disclose no production AI, backend, payment, licensed IP, external pilot, final art, or completed accessibility program. Disability and accessibility are material unresolved limitations.
+
+## Reflection and next study
+
+Discuss translating a psychological question into a product system, where technical consistency differs from human reciprocity, and why character governance became central. Propose a bounded feasibility study of usability, continuity, engagement, authenticity, discomfort, dependency signals, and accessibility barriers.

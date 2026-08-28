@@ -1,5 +1,5 @@
 import { useLocalSearchParams } from "expo-router";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import {
   KeyboardAvoidingView,
   Platform,
@@ -17,24 +17,19 @@ import { characterNamesZh } from "@/data/localized-content";
 import LanguageToggle from "@/components/LanguageToggle";
 import { useLanguage } from "@/hooks/use-language";
 import { useAffinity } from "@/hooks/use-affinity";
-
-interface ChatMessage {
-  id: string;
-  sender: "user" | "character";
-  text: string;
-}
+import { useChatHistory } from "@/hooks/use-chat-history";
 
 export default function ChatScreen() {
   const { language, text } = useLanguage();
   const affinity = useAffinity();
+  const history = useChatHistory();
   const { id = "mia" } = useLocalSearchParams<{ id?: string }>();
   const view = getCharacterViewById(id) ?? getCharacterViewById("mia");
   const era: CharacterEra = view?.character.era ?? "modern";
   const characterName = language === "zh" ? view?.character.displayNameZh ?? characterNamesZh[view?.character.displayName ?? "Mia"] ?? "米娅" : view?.character.displayName ?? "Mia";
   const [input, setInput] = useState("");
-  const [messages, setMessages] = useState<ChatMessage[]>([
-    { id: "opening", sender: "character", text: getOpeningLine(era, language) },
-  ]);
+  const savedMessages = history.getConversation(id, language);
+  const messages = savedMessages.length ? savedMessages : [{ id: `opening-${language}-${era}`, sender: "character" as const, text: getOpeningLine(era, language) }];
   const quickPrompts = language === "zh"
     ? ["你怎么看手机？", "你的时代是什么样？", "你可以来现在旅行吗？"]
     : ["What do you think of phones?", "What is your era like?", "Can you visit the present?"];
@@ -43,21 +38,12 @@ export default function ChatScreen() {
     [era],
   );
 
-  useEffect(() => {
-    setMessages([{ id: `opening-${language}-${era}`, sender: "character", text: getOpeningLine(era, language) }]);
-  }, [era, language]);
-
   function sendMessage(text = input) {
     const cleanText = text.trim();
     if (!cleanText) return;
 
     const reply = getScriptedReply(era, cleanText, language);
-    const timestamp = Date.now();
-    setMessages((current) => [
-      ...current,
-      { id: `user-${timestamp}`, sender: "user", text: cleanText },
-      { id: `character-${timestamp}`, sender: "character", text: reply.text },
-    ]);
+    history.appendExchange(id, language, cleanText, reply.text);
     setInput("");
     affinity.award(id, 3, "chat");
   }
@@ -78,7 +64,7 @@ export default function ChatScreen() {
       </View>
 
       <View style={styles.notice}>
-        <Text style={styles.noticeText}>{text("No AI API · Era-based replies run locally", "不接入 AI API · 年代对话在本地运行")}</Text>
+        <Text style={styles.noticeText}>{text("Local scripted replies · Conversation saved on this device", "本地脚本回复 · 对话已保存在此设备")}</Text>
       </View>
 
       <ScrollView style={styles.messages} contentContainerStyle={styles.messageContent} showsVerticalScrollIndicator={false}>

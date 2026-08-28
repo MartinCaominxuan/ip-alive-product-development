@@ -1,0 +1,9 @@
+import { assertGuardedCharacterRequest,type GuardedCharacterRequest } from "./ai-constitution.ts";
+import { privacySafeHash,reviewGuardedCharacterOutput,type OutputReview } from "./ai-output-guard.ts";
+export interface CharacterAITransport { complete:(messages:{role:"system"|"user";content:string}[])=>Promise<string>; }
+export interface CharacterAIAuditRecord{createdAt:string;constitutionVersion:string;characterId:string;authorityKind:string;canonVersion?:string;inputHash:string;outputHash:string;decision:OutputReview["decision"];issues:string[];}
+export interface CharacterAIAuditSink{write:(record:CharacterAIAuditRecord)=>Promise<void>|void}
+export interface GuardedCharacterResponse{text:string;rawAccepted:boolean;review:OutputReview;audit:CharacterAIAuditRecord}
+// A future paid AI provider connects only here. Raw chat text is never accepted and
+// raw model output is never returned before the second-pass review succeeds.
+export async function sendGuardedCharacterRequest(transport:CharacterAITransport,request:GuardedCharacterRequest,auditSink?:CharacterAIAuditSink):Promise<GuardedCharacterResponse>{const guarded=assertGuardedCharacterRequest(request);const raw=await transport.complete([{role:"system",content:guarded.system},{role:"user",content:guarded.user}]);const review=reviewGuardedCharacterOutput(guarded,raw);const audit={createdAt:new Date().toISOString(),constitutionVersion:guarded.constitutionVersion,characterId:guarded.characterId,authorityKind:guarded.audit.authorityKind,canonVersion:guarded.audit.canonVersion,inputHash:privacySafeHash(guarded.user),outputHash:privacySafeHash(raw),decision:review.decision,issues:review.issues};await auditSink?.write(audit);return{text:review.decision==="allow"?raw:review.safeFallback,rawAccepted:review.decision==="allow",review,audit}}

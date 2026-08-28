@@ -2,7 +2,7 @@ import { router } from "expo-router";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import LanguageToggle from "@/components/LanguageToggle";
-import { demoAccount, demoAccountStats } from "@/data/account";
+import { demoAccountStats } from "@/data/account";
 import { SERIES_INFO } from "@/data/characters";
 import { visitedPlaces } from "@/data/user-journey";
 import { getAccountTitle, getNextAccountTitle } from "@/features/account";
@@ -10,6 +10,8 @@ import { getCharacterViews } from "@/features/characters";
 import { useLanguage } from "@/hooks/use-language";
 import { useGameProgress } from "@/hooks/use-game-progress";
 import { useLifeProgress } from "@/hooks/use-life-progress";
+import { useProfile } from "@/hooks/use-profile";
+import { useUnlocks } from "@/hooks/use-unlocks";
 
 const LEVEL_EXPERIENCE_TARGET = 10000;
 
@@ -17,10 +19,12 @@ export default function MeScreen() {
   const { text } = useLanguage();
   const { bubbles, lifetimeScore, accountExperience, accountLevel } = useGameProgress();
   const life = useLifeProgress();
+  const { profile } = useProfile();
+  const unlocks = useUnlocks();
   const title = getAccountTitle(accountLevel);
   const nextTitle = getNextAccountTitle(accountLevel);
   const characterViews = getCharacterViews();
-  const unlockedCharacters = characterViews.filter(({ companion }) => companion.unlocked).length;
+  const unlockedCharacters = characterViews.filter(({ character }) => unlocks.isUnlocked(character.id)).length;
   const totalCharacters = Object.values(SERIES_INFO).reduce((sum, series) => sum + series.total, 0);
   const experienceInLevel = accountExperience % LEVEL_EXPERIENCE_TARGET;
   const levelProgress = experienceInLevel / LEVEL_EXPERIENCE_TARGET;
@@ -36,7 +40,7 @@ export default function MeScreen() {
         </View>
         <View style={styles.identityCopy}>
           <Text style={styles.eyebrow}>{text("COLLECTOR PROFILE", "收藏家档案")}</Text>
-          <Text style={styles.name}>{demoAccount.displayName}</Text>
+          <Text style={styles.name}>{profile.displayName}</Text>
           <View style={[styles.titleBadge, { backgroundColor: title.accent }]}>
           <Text style={styles.titleBadgeText}>✦ {text(title.name, title.name === "World Weaver" ? "世界织梦者" : title.name === "Time Friend" ? "时空旅伴" : "收藏家")}</Text>
           </View>
@@ -111,6 +115,9 @@ export default function MeScreen() {
         <Achievement icon="✨" name={text("Series Star", "系列之星")} tone="#F4ECFF" onPress={() => router.push({ pathname: "/me/[section]", params: { section: "achievements" } })} />
       </View>
       <Pressable style={styles.lifeAchievement} onPress={() => router.push("/life" as never)}><View><Text style={styles.lifeAchievementTitle}>{text("Life achievements", "生活成就")}</Text><Text style={styles.lifeAchievementText}>{text("Earned through real tasks, budgeting and health actions", "通过真实任务、预算和健康行动获得")}</Text></View><Text style={styles.lifeAchievementCount}>{life.achievements.length}/7 ›</Text></Pressable>
+      <View style={styles.accountActions}><Pressable style={styles.accountAction} onPress={() => router.push("/profile" as never)}><Text style={styles.accountIcon}>◎</Text><Text style={styles.accountTitle}>{text("Profile", "个人档案")}</Text><Text style={styles.accountText}>{text("Identity & history start", "身份与记录起点")}</Text></Pressable><Pressable style={styles.accountAction} onPress={() => router.push("/annual-summary" as never)}><Text style={styles.accountIcon}>✦</Text><Text style={styles.accountTitle}>{text("Annual story", "年度故事")}</Text><Text style={styles.accountText}>{text("Real activity timeline", "真实活动时间线")}</Text></Pressable></View>
+      <Pressable style={styles.dataButton} onPress={() => router.push("/data-management" as never)}><View><Text style={styles.dataEyebrow}>{text("LOCAL DATA VAULT","本地数据保险箱")}</Text><Text style={styles.dataTitle}>{text("Backup, transfer & recovery","备份、迁移与恢复")}</Text></View><Text style={styles.dataArrow}>›</Text></Pressable>
+      <Pressable style={styles.dataButton} onPress={() => router.push("/quality-center" as never)}><View><Text style={styles.dataEyebrow}>{text("CONTENT GOVERNANCE","内容治理")}</Text><Text style={styles.dataTitle}>{text("Character quality & release gate","角色评测与发布门槛")}</Text></View><Text style={styles.dataArrow}>›</Text></Pressable>
     </ScrollView>
   );
 }
@@ -186,4 +193,6 @@ const styles = StyleSheet.create({
   achievementEmoji: { fontSize: 26 },
   achievementName: { marginTop: 8, fontSize: 11, fontWeight: "700", textAlign: "center", color: "#514A59" },
   lifeAchievement: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", padding: 16, borderRadius: 19, backgroundColor: "#E7F4EE" }, lifeAchievementTitle: { fontSize: 13, fontWeight: "900", color: "#2D5E4F" }, lifeAchievementText: { maxWidth: 250, marginTop: 3, fontSize: 9, color: "#668277" }, lifeAchievementCount: { fontSize: 13, fontWeight: "900", color: "#3C7864" },
+  accountActions:{flexDirection:"row",gap:10},accountAction:{flex:1,padding:15,borderRadius:19,backgroundColor:"#FFFFFF"},accountIcon:{fontSize:18,fontWeight:"900",color:"#7459D1"},accountTitle:{marginTop:8,fontSize:13,fontWeight:"900",color:"#40364B"},accountText:{marginTop:3,fontSize:9,color:"#817789"},
+  dataButton: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", padding: 16, borderRadius: 19, backgroundColor: "#E8E3F4" }, dataEyebrow: { fontSize: 8, fontWeight: "900", letterSpacing: 1.1, color: "#7964B7" }, dataTitle: { marginTop: 4, fontSize: 13, fontWeight: "900", color: "#463A60" }, dataArrow: { fontSize: 25, color: "#705ABE" },
 });

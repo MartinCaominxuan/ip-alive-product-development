@@ -1,5 +1,6 @@
 import { router } from "expo-router";
 import {
+  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -13,6 +14,7 @@ import { SERIES_INFO } from "@/data/characters";
 import { characterNamesZh } from "@/data/localized-content";
 import { getCharacterViews } from "@/features/characters";
 import { useLanguage } from "@/hooks/use-language";
+import { useUnlocks } from "@/hooks/use-unlocks";
 
 const CARD_MIN_WIDTH = 160;
 const CARD_GAP = 10;
@@ -22,6 +24,7 @@ const MAX_CONTENT_WIDTH = 1200;
 export default function CharacterScreen() {
   const { language, text } = useLanguage();
   const { width } = useWindowDimensions();
+  const unlocks = useUnlocks();
 
   const characterViews = getCharacterViews();
 
@@ -62,14 +65,13 @@ export default function CharacterScreen() {
         <Text style={styles.pageSubtitle}>
           {text("Choose someone to spend time with.", "选择一位角色，开始你们的陪伴旅程。")}
         </Text>
+        <Pressable style={styles.unlockButton} onPress={()=>router.push("/unlock" as never)}><View><Text style={styles.unlockEyebrow}>{text("PHYSICAL → DIGITAL","实体 → 数字")}</Text><Text style={styles.unlockTitle}>{text("Redeem a character","兑换角色")}</Text></View><Text style={styles.unlockArrow}>›</Text></Pressable>
 
         {seriesNames.map((seriesName) => {
           const seriesCharacters = characterViews.filter(
             ({ character }) => character.series === seriesName
           );
-          const unlockedCount = seriesCharacters.filter(
-            ({ companion }) => companion.unlocked
-          ).length;
+          const unlockedCount = seriesCharacters.filter(({ character }) => unlocks.isUnlocked(character.id)).length;
           const totalCount = SERIES_INFO[seriesName].total;
           const completion = totalCount === 0 ? 0 : unlockedCount / totalCount;
 
@@ -91,7 +93,7 @@ export default function CharacterScreen() {
 
               <View style={styles.grid}>
                 {seriesCharacters.map(
-                  ({ character, companion }) => (
+                  ({ character, companion }) => { const unlocked=unlocks.isUnlocked(character.id); return (
                     <View
                       key={character.id}
                       style={[
@@ -107,7 +109,7 @@ export default function CharacterScreen() {
                         level={companion.level}
                         status={language === "zh" ? character.statusZh ?? companion.status : companion.status}
                         language={language}
-                        unlocked={companion.unlocked}
+                        unlocked={unlocked}
                         onPress={() =>
                           router.push({
                             pathname: "/character/[id]",
@@ -118,7 +120,7 @@ export default function CharacterScreen() {
                         }
                       />
                     </View>
-                  )
+                  )}
                 )}
               </View>
             </View>
@@ -163,6 +165,7 @@ const styles = StyleSheet.create({
     lineHeight: 23,
     color: "#666666",
   },
+  unlockButton:{flexDirection:"row",alignItems:"center",justifyContent:"space-between",marginTop:-12,marginBottom:25,padding:16,borderRadius:19,backgroundColor:"#29203F"},unlockEyebrow:{fontSize:8,fontWeight:"900",letterSpacing:1.2,color:"#BFAEFF"},unlockTitle:{marginTop:4,fontSize:14,fontWeight:"900",color:"#FFF"},unlockArrow:{fontSize:28,color:"#FFF"},
 
   seriesSection: {
     marginBottom: 30,

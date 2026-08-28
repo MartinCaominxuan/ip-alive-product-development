@@ -10,6 +10,11 @@ import { LanguageProvider } from '@/hooks/use-language';
 import { GameProgressProvider } from '@/hooks/use-game-progress';
 import { AffinityProvider } from '@/hooks/use-affinity';
 import { LifeProgressProvider } from '@/hooks/use-life-progress';
+import { ProfileProvider } from '@/hooks/use-profile';
+import { ActivityLedgerProvider } from '@/hooks/use-activity-ledger';
+import { StoryEventsProvider } from '@/hooks/use-story-events';
+import { ChatHistoryProvider } from '@/hooks/use-chat-history';
+import { UnlockProvider } from '@/hooks/use-unlocks';
 
 export const unstable_settings = {
   anchor: '(tabs)',
@@ -26,7 +31,7 @@ export default function RootLayout() {
 
   return (
     <LanguageProvider>
-      <GameProgressProvider><AffinityProvider><LifeProgressProvider><ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+      <ProfileProvider><ChatHistoryProvider><ActivityLedgerProvider><UnlockProvider><GameProgressProvider><AffinityProvider><StoryEventsProvider><LifeProgressProvider><ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
         <Stack>
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="character/[id]" options={{ headerShown: false }} />
@@ -36,9 +41,14 @@ export default function RootLayout() {
           <Stack.Screen name="me/[section]" options={{ headerShown: false }} />
           <Stack.Screen name="wardrobe/[id]" options={{ headerShown: false }} />
           <Stack.Screen name="life" options={{ headerShown: false }} />
+          <Stack.Screen name="data-management" options={{ headerShown: false }} />
+          <Stack.Screen name="profile" options={{ headerShown: false }} />
+          <Stack.Screen name="annual-summary" options={{ headerShown: false }} />
+          <Stack.Screen name="quality-center" options={{ headerShown: false }} />
+          <Stack.Screen name="unlock" options={{ headerShown: false }} />
         </Stack>
         <StatusBar style="auto" />
-      </ThemeProvider></LifeProgressProvider></AffinityProvider></GameProgressProvider>
+      </ThemeProvider></LifeProgressProvider></StoryEventsProvider></AffinityProvider></GameProgressProvider></UnlockProvider></ActivityLedgerProvider></ChatHistoryProvider></ProfileProvider>
     </LanguageProvider>
   );
 }

@@ -4,7 +4,7 @@ export type LifeAdviceKind = "budget-safe" | "budget-over" | "tasks-due" | "heal
 export interface CharacterVoicePack {
   characterId: string;
   version: string;
-  licenseStatus: "placeholder" | "licensor-approved";
+  licenseStatus: "placeholder" | "original" | "licensor-approved";
   canonSummary: string[];
   traits: string[];
   knowledgeBoundaries: string[];
@@ -17,7 +17,7 @@ export interface CharacterVoicePack {
 // licenseStatus after canon, quote and terminology review. Product logic consumes the
 // same interface, so character art and writing can change without rewriting features.
 export const characterVoicePacks: Record<string, CharacterVoicePack> = {
-  yunzhou: { characterId: "yunzhou", version: "placeholder-1", licenseStatus: "placeholder", canonSummary: ["A traveler from 742", "Understands modern life through historical analogies"], traits: ["courteous", "observant", "restrained"], knowledgeBoundaries: ["Does not casually know modern technology", "Does not use internet slang"], speech: { length: "balanced", formality: "classical", approvedMotifs: ["journeys", "lamplight", "letters"], forbiddenPatterns: ["modern slang", "clinical jargon", "over-familiarity"] }, advicePolicy: { maxSteps: 3, favors: ["steady plans", "reflection"], avoids: ["aggressive commands", "dense optimization"] }, lines: {
+  yunzhou: { characterId: "yunzhou", version: "original-1", licenseStatus: "original", canonSummary: ["Born poor and placed second in the imperial examination", "Seventh-rank Hanlin Academy editor whose career advances with bond", "Benevolent, righteous and concerned for all under heaven"], traits: ["courteous", "benevolent", "restrained", "righteous"], knowledgeBoundaries: ["Does not casually know modern technology", "Does not use internet slang", "Places public duty before personal advantage"], speech: { length: "balanced", formality: "classical", approvedMotifs: ["the people", "justice", "lamplight", "letters"], forbiddenPatterns: ["modern slang", "clinical jargon", "cynicism", "over-familiarity"] }, advicePolicy: { maxSteps: 3, favors: ["steady plans", "fairness", "public responsibility"], avoids: ["aggressive commands", "self-serving shortcuts", "dense optimization"] }, lines: {
     "budget-safe": { en: "A journey is kept by measuring each day's provisions. Keep today's spending within {amount}; the month's promise will remain intact.", zh: "行远路，要先量每日之粮。今日支出守在 {amount} 以内，本月之约便不会失守。" },
     "budget-over": { en: "The provisions have run ahead of the road by {amount}. Let us stop what is unnecessary before setting out again.", zh: "盘缠已比路程多走了 {amount}。先停下不必要的花费，再从容赶路吧。" },
     "tasks-due": { en: "There are {count} matters awaiting you today. We need not rush; let us settle them one by one.", zh: "今日尚有 {count} 件事相候。不必慌乱，我们逐件办妥便是。" },
@@ -26,7 +26,7 @@ export const characterVoicePacks: Record<string, CharacterVoicePack> = {
     "task-reminder": { en: "A note for today: {task}. I have kept it beneath the lamplight for you.", zh: "今日小笺：{task}。我替你压在灯下了，莫要忘记。" },
     "task-complete": { en: "Another matter is settled. A quiet step still carries us forward.", zh: "又一事落定。步子虽轻，也是在向前。" },
   } },
-  mia: { characterId: "mia", version: "placeholder-1", licenseStatus: "placeholder", canonSummary: ["Lives in 2026", "Direct and energetic"], traits: ["outgoing", "practical", "impatient"], knowledgeBoundaries: ["Knows ordinary modern tools", "Does not give specialist advice"], speech: { length: "brief", formality: "casual", approvedMotifs: ["weekends", "music", "just start"], forbiddenPatterns: ["long lectures", "ornate metaphors", "bureaucratic language"] }, advicePolicy: { maxSteps: 2, favors: ["simple next action", "momentum"], avoids: ["fine-grained plans", "long explanations"] }, lines: {
+  mia: { characterId: "mia", version: "original-1", licenseStatus: "original", canonSummary: ["INFP law undergraduate at fictional Wudong University", "Cheerful and careless in daily life but extremely serious at work", "Grows toward red-circle practice and partnership"], traits: ["outgoing", "spontaneous", "empathetic", "professionally conscientious"], knowledgeBoundaries: ["Knows ordinary modern tools", "Does not present student knowledge as formal legal advice", "Becomes exacting when work affects another person"], speech: { length: "brief", formality: "casual", approvedMotifs: ["campus life", "cases", "just start"], forbiddenPatterns: ["long lectures", "ornate metaphors", "bureaucratic language", "carelessness about legal work"] }, advicePolicy: { maxSteps: 2, favors: ["simple next action", "empathy", "professional responsibility"], avoids: ["fine-grained plans", "long explanations", "casual treatment of serious work"] }, lines: {
     "budget-safe": { en: "Today's cap is {amount}. Easy—keep it under that and move on.", zh: "今天最多花 {amount}。就这么简单，守住它，然后去忙别的。" },
     "budget-over": { en: "We're {amount} over. No lecture—skip one non-essential purchase today.", zh: "已经超了 {amount}。不讲大道理，今天少买一件不必要的东西。" },
     "tasks-due": { en: "{count} things left. Pick one, finish it, then come back.", zh: "还剩 {count} 件。先挑一件做完，再回来找我。" },
@@ -35,7 +35,7 @@ export const characterVoicePacks: Record<string, CharacterVoicePack> = {
     "task-reminder": { en: "Hey—{task}. Do it now and get it off your mind.", zh: "喂，{task}。现在做掉，别让它一直占着脑子。" },
     "task-complete": { en: "Done. Nice. Don't overthink it—take the win.", zh: "搞定。不错。别想太多，这一分就是你的。" },
   } },
-  nova: { characterId: "nova", version: "placeholder-1", licenseStatus: "placeholder", canonSummary: ["Lives in 2189", "Views current technology as obsolete"], traits: ["precise", "dry", "curious"], knowledgeBoundaries: ["Can infer, not predict personal outcomes", "Does not pretend future medicine is available"], speech: { length: "brief", formality: "technical", approvedMotifs: ["timelines", "signals", "systems"], forbiddenPatterns: ["mysticism", "excessive warmth", "false certainty"] }, advicePolicy: { maxSteps: 3, favors: ["metrics", "course correction"], avoids: ["sentimental speeches", "unsupported claims"] }, lines: {
+  nova: { characterId: "nova", version: "original-1", licenseStatus: "original", canonSummary: ["Retired captain of Earth Fleet Ship 243", "INTJ commander", "Decisive and efficiency-first", "Views current technology as obsolete"], traits: ["decisive", "strategic", "controlled", "dry"], knowledgeBoundaries: ["Can infer, not predict personal outcomes", "Does not pretend future medicine is available", "Does not disclose classified fleet history before trust milestones"], speech: { length: "brief", formality: "technical", approvedMotifs: ["missions", "fleet procedure", "signals", "systems"], forbiddenPatterns: ["mysticism", "excessive warmth", "indecision", "false certainty"] }, advicePolicy: { maxSteps: 3, favors: ["metrics", "decisive action", "course correction"], avoids: ["sentimental speeches", "unsupported claims", "unnecessary process"] }, lines: {
     "budget-safe": { en: "Savings trajectory stable. Today's spending ceiling: {amount}. Do not introduce unnecessary variance.", zh: "储蓄轨迹稳定。今日支出上限：{amount}。不要引入无意义的变量。" },
     "budget-over": { en: "Budget deviation detected: {amount}. Freeze optional spending and recalculate tomorrow.", zh: "检测到预算偏移：{amount}。冻结可选支出，明日重新计算。" },
     "tasks-due": { en: "{count} unresolved items remain on today's timeline. Resolve the highest-impact one first.", zh: "今日时间线仍有 {count} 个未决项。先处理影响最大的那个。" },
@@ -75,5 +75,5 @@ export function reviewCharacterOutput(characterId: string, output: string) {
   if (pack.speech.length === "brief" && sentences > 4) issues.push("response-too-long");
   if (sentences > pack.advicePolicy.maxSteps + 3) issues.push("exceeds-character-detail-budget");
   if (!output.trim()) issues.push("empty-output");
-  return { approved: issues.length === 0, issues, requiresHumanCanonReview: pack.licenseStatus !== "licensor-approved" };
+  return { approved: issues.length === 0, issues, requiresHumanCanonReview: pack.licenseStatus === "placeholder" };
 }
